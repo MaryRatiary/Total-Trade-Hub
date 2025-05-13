@@ -19,7 +19,7 @@ const UserHorizontalScroll = ({ users }) => {
                 <p className="text-sm font-medium">
                   {(user.FirstName || user.firstName)} {(user.LastName || user.lastName)}
                 </p>
-                <p className="text-xs text-gray-500">@{user.Username || user.username}</p>
+                <p className="text-xs text-gray-500">{user.Username || user.username}</p>
               </div>
             </div>
           ))}

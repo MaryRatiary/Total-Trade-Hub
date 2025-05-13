@@ -1,9 +1,10 @@
 // Récupérer l'IP du serveur en fonction de l'environnement
 const getApiBaseUrl = () => {
+    // Utiliser l'IP actuelle de la machine pour le développement
     if (process.env.NODE_ENV === 'development') {
-        return 'http://localhost:5131/api';
+        return 'http://192.168.43.223:5131/api';
     }
-    return process.env.VITE_API_URL || 'http://localhost:5131/api';
+    return process.env.VITE_API_URL || 'http://192.168.43.223:5131/api';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

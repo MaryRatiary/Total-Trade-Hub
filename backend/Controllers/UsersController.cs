@@ -14,12 +14,22 @@ namespace TTH.Backend.Controllers
         private readonly UserService _userService;
         private readonly ILogger<UsersController> _logger;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly string _baseUrl;
 
         public UsersController(UserService userService, ILogger<UsersController> logger, IWebHostEnvironment webHostEnvironment)
         {
             _userService = userService;
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
+            _baseUrl = webHostEnvironment.IsDevelopment() 
+                ? "http://192.168.43.223:5131"  // URL de développement
+                : "http://192.168.43.223:5131"; // URL de production (à modifier selon vos besoins)
+        }
+
+        private string GetFullUrl(string? path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            return $"{_baseUrl}{path}";
         }
 
         [HttpGet("list")] // Changed from "all" to "list" to avoid conflict
@@ -46,7 +56,7 @@ namespace TTH.Backend.Controllers
                     Phone = user.Phone,
                     Residence = user.Residence,
                     ProfilePicture = !string.IsNullOrEmpty(user.ProfilePicture)
-                        ? $"http://localhost:5131{user.ProfilePicture}"
+                        ? GetFullUrl(user.ProfilePicture)
                         : null,
                     Articles = user.Articles?.Select(a => new
                     {
@@ -54,7 +64,7 @@ namespace TTH.Backend.Controllers
                         Title = a.Title,
                         Description = a.Description,
                         ImagePath = !string.IsNullOrEmpty(a.ImagePath)
-                            ? $"http://localhost:5131{a.ImagePath}"
+                            ? GetFullUrl(a.ImagePath)
                             : null,
                         CreatedAt = a.CreatedAt
                     }).ToList()
@@ -96,7 +106,7 @@ namespace TTH.Backend.Controllers
                     phone = user.Phone ?? "",
                     residence = user.Residence ?? "",
                     profilePicture = !string.IsNullOrEmpty(user.ProfilePicture)
-                        ? $"http://localhost:5131{user.ProfilePicture}"
+                        ? GetFullUrl(user.ProfilePicture)
                         : "/default-avatar.png", // Default profile picture if none exists
                     articles = user.Articles.Select(a => new
                     {
@@ -104,7 +114,7 @@ namespace TTH.Backend.Controllers
                         title = a.Title,
                         description = a.Description,
                         imagePath = !string.IsNullOrEmpty(a.ImagePath) 
-                            ? $"http://localhost:5131{a.ImagePath}"
+                            ? GetFullUrl(a.ImagePath)
                             : null,
                         createdAt = a.CreatedAt
                     }).ToList()
@@ -181,7 +191,7 @@ namespace TTH.Backend.Controllers
                     Phone = user.Phone ?? "",
                     Residence = user.Residence ?? "",
                     ProfilePicture = !string.IsNullOrEmpty(user.ProfilePicture) 
-                        ? $"http://localhost:5131{user.ProfilePicture}"
+                        ? GetFullUrl(user.ProfilePicture)
                         : null,
                     Articles = user.Articles.Select(a => new
                     {
@@ -189,7 +199,7 @@ namespace TTH.Backend.Controllers
                         title = a.Title,
                         description = a.Description,
                         imagePath = !string.IsNullOrEmpty(a.ImagePath) 
-                            ? $"http://localhost:5131{a.ImagePath}"
+                            ? GetFullUrl(a.ImagePath)
                             : null,
                         createdAt = a.CreatedAt,
                         location = a.Location,
@@ -294,12 +304,12 @@ namespace TTH.Backend.Controllers
                 _logger.LogInformation("Profile picture update completed successfully");
                 return Ok(new { 
                     message = "Profile picture updated successfully",
-                    profilePictureUrl = $"http://localhost:5131{relativePath}",
+                    profilePictureUrl = GetFullUrl(relativePath),
                     debugInfo = new {
                         userId,
                         oldPath = oldPicturePath,
                         newPath = relativePath,
-                        fullUrl = $"http://localhost:5131{relativePath}"
+                        fullUrl = GetFullUrl(relativePath)
                     }
                 });
             }

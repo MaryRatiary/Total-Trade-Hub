@@ -14,6 +14,7 @@ namespace TTH.Backend.Controllers
         private readonly UserService _userService;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<ArticlesController> _logger;
+        private readonly string _baseUrl;
 
         public ArticlesController(
             ArticleService articleService,
@@ -25,6 +26,9 @@ namespace TTH.Backend.Controllers
             _userService = userService;
             _environment = environment;
             _logger = logger;
+            _baseUrl = environment.IsDevelopment() 
+                ? "http://192.168.43.223:5131"  // URL de développement
+                : "http://192.168.43.223:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         [HttpGet("all")]
@@ -62,15 +66,11 @@ namespace TTH.Backend.Controllers
                         location = a.Location,
                         description = a.Description,
                         contact = a.Contact,
-                        imagePath = !string.IsNullOrEmpty(a.ImagePath) 
-                            ? $"http://localhost:5131{a.ImagePath}" 
-                            : null,
+                        imagePath = GetFullUrl(a.ImagePath),
                         authorFirstName = a.AuthorFirstName,
                         authorLastName = a.AuthorLastName,
                         authorUsername = a.AuthorUsername,
-                        authorProfilePicture = !string.IsNullOrEmpty(a.AuthorProfilePicture) 
-                            ? $"http://localhost:5131{a.AuthorProfilePicture}" 
-                            : null,
+                        authorProfilePicture = GetFullUrl(a.AuthorProfilePicture),
                         createdAt = a.CreatedAt
                     };
                 }).ToList();
@@ -118,9 +118,7 @@ namespace TTH.Backend.Controllers
                     location = a.Location,
                     description = a.Description,
                     contact = a.Contact,
-                    imagePath = !string.IsNullOrEmpty(a.ImagePath) 
-                        ? $"http://localhost:5131{a.ImagePath}"
-                        : null,
+                    imagePath = GetFullUrl(a.ImagePath),
                     createdAt = a.CreatedAt,
                     userId = a.UserId,
                     authorFirstName = a.AuthorFirstName,
@@ -231,9 +229,7 @@ namespace TTH.Backend.Controllers
                         location = article.Location,
                         description = article.Description,
                         contact = article.Contact,
-                        imagePath = !string.IsNullOrEmpty(article.ImagePath) 
-                            ? $"http://localhost:5131{article.ImagePath}" 
-                            : null,
+                        imagePath = GetFullUrl(article.ImagePath),
                         createdAt = article.CreatedAt,
                         userId = article.UserId,
                         authorFirstName = article.AuthorFirstName,
@@ -252,6 +248,12 @@ namespace TTH.Backend.Controllers
                 _logger.LogError($"Error creating article: {ex.Message}");
                 return StatusCode(500, new { message = "Error creating article" });
             }
+        }
+
+        private string GetFullUrl(string? path)
+        {
+            if (string.IsNullOrEmpty(path)) return null;
+            return $"{_baseUrl}{path}";
         }
 
         private async Task<string> SaveImageFile(IFormFile? image)

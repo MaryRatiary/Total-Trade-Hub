@@ -50,12 +50,15 @@ builder.Services.AddSingleton<LoginAttemptTracker>();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", builder =>
+    options.AddPolicy("AllowFrontend", corsBuilder =>
     {
-        builder
+        // En développement et production, autoriser les origines spécifiques
+        corsBuilder
             .WithOrigins(
                 "http://localhost:5173",
-                "http://192.168.1.181:5173"
+                "http://192.168.43.223:5173",
+                "http://192.168.43.223:5131",
+                "http://localhost:5131"
             )
             .AllowAnyMethod()
             .AllowAnyHeader()
