@@ -27,8 +27,8 @@ namespace TTH.Backend.Controllers
             _environment = environment;
             _logger = logger;
             _baseUrl = environment.IsDevelopment() 
-                ? "http://192.168.43.223:5131"  // URL de développement
-                : "http://192.168.43.223:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.43.53:5131"  // URL de développement
+                : "http://192.168.43.53:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         [HttpGet("all")]

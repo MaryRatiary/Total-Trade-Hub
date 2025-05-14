@@ -52,14 +52,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", corsBuilder =>
     {
-        // En développement et production, autoriser les origines spécifiques
         corsBuilder
-            .WithOrigins(
-                "http://localhost:5173",
-                "http://192.168.43.223:5173",
-                "http://192.168.43.223:5131",
-                "http://localhost:5131"
-            )
+            .SetIsOriginAllowed(origin => 
+            {
+                var allowedOrigins = new[]
+                {
+                    "http://localhost:5173",
+                    "http://192.168.43.53:5173",
+                    "http://192.168.43.53:5131",
+                    "http://localhost:5131"
+                };
+                return allowedOrigins.Contains(origin);
+            })
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
@@ -130,16 +134,16 @@ if (app.Environment.IsDevelopment())
 }
 
 // Important: Correct middleware order
+app.UseRouting();
+app.UseCors("AllowFrontend"); // CORS must be configured before authentication
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseStaticFiles(new StaticFileOptions
 {
     ServeUnknownFileTypes = true,
     DefaultContentType = "application/octet-stream"
 });
-
-app.UseRouting();
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
 
 // Add minimal API health check endpoint
 app.MapMethods("/api", new[] { "GET", "HEAD" }, () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
