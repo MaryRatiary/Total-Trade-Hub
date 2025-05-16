@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using MongoDB.Bson;
 using TTH.Backend.Data;
 using TTH.Backend.Models;
 
@@ -51,6 +52,53 @@ namespace TTH.Backend.Services
                     else
                     {
                         _logger.LogWarning($"No author found for article {article.Id}");
+                    }
+                }
+
+                _logger.LogInformation("Finished processing all articles");
+                return articles;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in GetAllAsync: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+        public async Task<List<Article>> GetAllAsync(string? currentUserId = null)
+        {
+            try
+            {
+                _logger.LogInformation("Starting GetAllAsync in ArticleService");
+                
+                var articles = await _articles.Find(_ => true)
+                    .SortByDescending(a => a.CreatedAt)
+                    .ToListAsync();
+                
+                _logger.LogInformation($"Found {articles.Count} articles in database");
+
+                foreach (var article in articles)
+                {
+                    _logger.LogInformation($"Processing article {article.Id}");
+                    var user = await _users.Find(u => u.Id == article.UserId).FirstOrDefaultAsync();
+                    
+                    if (user != null)
+                    {
+                        _logger.LogInformation($"Found author: {user.FirstName} {user.LastName}");
+                        article.AuthorFirstName = user.FirstName;
+                        article.AuthorLastName = user.LastName;
+                        article.AuthorUsername = user.Username;
+                        article.AuthorProfilePicture = user.ProfilePicture;
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"No author found for article {article.Id}");
+                    }
+
+                    if (currentUserId != null)
+                    {
+                        article.HasLiked = article.Likes.Contains(currentUserId);
                     }
                 }
 
@@ -173,6 +221,128 @@ namespace TTH.Backend.Services
                 }
             }
             return articles;
+        }
+
+        public async Task<bool> LikeArticleAsync(string articleId, string userId)
+        {
+            try
+            {
+                var article = await _articles.Find(x => x.Id == articleId).FirstOrDefaultAsync();
+                if (article == null)
+                    return false;
+
+                var update = article.Likes.Contains(userId)
+                    ? Builders<Article>.Update.Pull("likes", userId)
+                    : Builders<Article>.Update.Push("likes", userId);
+
+                var result = await _articles.UpdateOneAsync(x => x.Id == articleId, update);
+                return result.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error liking article: {ex}");
+                return false;
+            }
+        }
+
+        public async Task<Comment?> AddCommentAsync(string articleId, string userId, string content)
+        {
+            try
+            {
+                var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+                if (user == null)
+                    return null;
+
+                var comment = new Comment
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    UserId = userId,
+                    Content = content,
+                    CreatedAt = DateTime.UtcNow,
+                    AuthorUsername = user.Username,
+                    AuthorProfilePicture = user.ProfilePicture
+                };
+
+                var update = Builders<Article>.Update.Push("comments", comment);
+                await _articles.UpdateOneAsync(x => x.Id == articleId, update);
+
+                return comment;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error adding comment: {ex}");
+                return null;
+            }
+        }
+
+        public async Task<bool> DeleteCommentAsync(string articleId, string commentId, string userId)
+        {
+            try
+            {
+                var update = Builders<Article>.Update.PullFilter(
+                    x => x.Comments,
+                    c => c.Id == commentId && c.UserId == userId
+                );
+
+                var result = await _articles.UpdateOneAsync(x => x.Id == articleId, update);
+                return result.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error deleting comment: {ex}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ShareArticleAsync(string articleId)
+        {
+            try
+            {
+                var update = Builders<Article>.Update.Inc(x => x.ShareCount, 1);
+                var result = await _articles.UpdateOneAsync(x => x.Id == articleId, update);
+                return result.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error sharing article: {ex}");
+                return false;
+            }
+        }
+
+        public async Task<List<Article>> GetFriendsArticlesAsync(string userId)
+        {
+            try
+            {
+                var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+                if (user == null || user.Friends == null)
+                {
+                    return new List<Article>();
+                }
+
+                var articles = await _articles
+                    .Find(a => user.Friends.Contains(a.UserId))
+                    .SortByDescending(a => a.CreatedAt)
+                    .ToListAsync();
+
+                foreach (var article in articles)
+                {
+                    var author = await _users.Find(u => u.Id == article.UserId).FirstOrDefaultAsync();
+                    if (author != null)
+                    {
+                        article.AuthorFirstName = author.FirstName;
+                        article.AuthorLastName = author.LastName;
+                        article.AuthorUsername = author.Username;
+                        article.AuthorProfilePicture = author.ProfilePicture;
+                    }
+                }
+
+                return articles;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in GetFriendsArticlesAsync: {ex.Message}");
+                throw;
+            }
         }
     }
 }

@@ -15,15 +15,44 @@ namespace TTH.Backend.Controllers
         private readonly MessageService _messageService;
         private readonly UserService _userService;
         private readonly ILogger<MessageController> _logger;
+        private readonly IWebHostEnvironment _environment;
+        private readonly string _baseUrl;
 
         public MessageController(
             MessageService messageService,
             UserService userService,
-            ILogger<MessageController> logger)
+            ILogger<MessageController> logger,
+            IWebHostEnvironment environment)
         {
             _messageService = messageService;
             _userService = userService;
             _logger = logger;
+            _environment = environment;
+            _baseUrl = environment.IsDevelopment() 
+                ? "http://192.168.43.223:5131"  // URL de développement
+                : "http://192.168.43.223:5131"; // URL de production
+        }
+
+        private string GetFullUrl(string? path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            // Si le chemin est déjà une URL complète, on la retourne telle quelle
+            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            {
+                return path;
+            }
+
+            // S'assurer que le chemin commence par /
+            if (!path.StartsWith("/"))
+            {
+                path = "/" + path;
+            }
+
+            return $"{_baseUrl}{path}";
         }
 
         [HttpGet("conversations")]
@@ -51,9 +80,7 @@ namespace TTH.Backend.Controllers
                             id = otherUserId,
                             firstName = otherUser?.FirstName,
                             lastName = otherUser?.LastName,
-                            profilePicture = !string.IsNullOrEmpty(otherUser?.ProfilePicture)
-                                ? $"http://localhost:5131{otherUser.ProfilePicture}"
-                                : null,
+                            profilePicture = GetFullUrl(otherUser?.ProfilePicture),
                             lastMessage = lastMessage.Content,
                             lastMessageTime = lastMessage.CreatedAt,
                             unreadCount = g.Count(m => !m.IsRead && m.SenderId == otherUserId)

@@ -27,8 +27,8 @@ namespace TTH.Backend.Controllers
             _environment = environment;
             _logger = logger;
             _baseUrl = environment.IsDevelopment() 
-                ? "http://192.168.43.53:5131"  // URL de développement
-                : "http://192.168.43.53:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.43.223:5131"  // URL de développement
+                : "http://192.168.43.223:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         [HttpGet("all")]
@@ -124,9 +124,7 @@ namespace TTH.Backend.Controllers
                     authorFirstName = a.AuthorFirstName,
                     authorLastName = a.AuthorLastName,
                     authorUsername = a.AuthorUsername,
-                    authorProfilePicture = !string.IsNullOrEmpty(a.AuthorProfilePicture) 
-                        ? $"http://localhost:5131{a.AuthorProfilePicture}"
-                        : null
+                    authorProfilePicture = GetFullUrl(a.AuthorProfilePicture)
                 });
 
                 return Ok(response);
@@ -252,7 +250,23 @@ namespace TTH.Backend.Controllers
 
         private string GetFullUrl(string? path)
         {
-            if (string.IsNullOrEmpty(path)) return null;
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            // Si le chemin est déjà une URL complète, on la retourne telle quelle
+            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            {
+                return path;
+            }
+
+            // S'assurer que le chemin commence par /
+            if (!path.StartsWith("/"))
+            {
+                path = "/" + path;
+            }
+
             return $"{_baseUrl}{path}";
         }
 
@@ -354,16 +368,12 @@ namespace TTH.Backend.Controllers
                     location = article.Location,
                     description = article.Description,
                     contact = article.Contact,
-                    imagePath = !string.IsNullOrEmpty(article.ImagePath)
-                        ? $"http://localhost:5131{article.ImagePath}"
-                        : null,
+                    imagePath = GetFullUrl(article.ImagePath),
                     createdAt = article.CreatedAt,
                     authorFirstName = article.AuthorFirstName,
                     authorLastName = article.AuthorLastName,
                     authorUsername = article.AuthorUsername,
-                    authorProfilePicture = !string.IsNullOrEmpty(article.AuthorProfilePicture)
-                        ? $"http://localhost:5131{article.AuthorProfilePicture}"
-                        : null
+                    authorProfilePicture = GetFullUrl(article.AuthorProfilePicture)
                 };
 
                 return Ok(response);
@@ -432,33 +442,16 @@ namespace TTH.Backend.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { message = "User not authenticated" });
+                    return Unauthorized();
                 }
 
                 var user = await _userService.GetByIdAsync(userId);
                 if (user == null)
                 {
-                    return NotFound(new { message = "User not found" });
+                    return NotFound("User not found");
                 }
 
-                if (user.Friends == null || !user.Friends.Any())
-                {
-                    return Ok(new List<Article>());
-                }
-
-                var articles = new List<Article>();
-                foreach (var friendId in user.Friends)
-                {
-                    var friendArticles = await _articleService.GetArticlesByUserIdAsync(friendId);
-                    if (friendArticles != null)
-                    {
-                        articles.AddRange(friendArticles);
-                    }
-                }
-
-                // Trier les articles par date de création (plus récent en premier)
-                articles = articles.OrderByDescending(a => a.CreatedAt).ToList();
-
+                var articles = await _articleService.GetFriendsArticlesAsync(userId);
                 var response = articles.Select(a => new
                 {
                     id = a.Id,
@@ -468,26 +461,130 @@ namespace TTH.Backend.Controllers
                     location = a.Location,
                     description = a.Description,
                     contact = a.Contact,
-                    imagePath = !string.IsNullOrEmpty(a.ImagePath) 
-                        ? $"http://localhost:5131{a.ImagePath}" 
-                        : null,
+                    imagePath = GetFullUrl(a.ImagePath),
                     authorFirstName = a.AuthorFirstName,
                     authorLastName = a.AuthorLastName,
                     authorUsername = a.AuthorUsername,
-                    authorProfilePicture = !string.IsNullOrEmpty(a.AuthorProfilePicture) 
-                        ? $"http://localhost:5131{a.AuthorProfilePicture}"
-                        : null,
-                    createdAt = a.CreatedAt
-                });
+                    authorProfilePicture = GetFullUrl(a.AuthorProfilePicture),
+                    createdAt = a.CreatedAt,
+                    likes = a.Likes,
+                    comments = a.Comments,
+                    shareCount = a.ShareCount
+                }).ToList();
 
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error getting friends articles: {ex}");
-                return StatusCode(500, new { message = "An error occurred while fetching friends' articles" });
+                _logger.LogError($"Error fetching friends' articles: {ex.Message}");
+                return StatusCode(500, new { message = "Error fetching friends' articles", error = ex.Message });
             }
         }
+
+        [HttpPost("{id}/like")]
+        public async Task<IActionResult> LikeArticle(string id)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var result = await _articleService.LikeArticleAsync(id, userId);
+                if (!result)
+                    return NotFound();
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in LikeArticle: {ex}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpPost("{id}/comments")]
+        public async Task<IActionResult> AddComment(string id, [FromBody] CommentDto commentDto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var comment = await _articleService.AddCommentAsync(id, userId, commentDto.Content);
+                if (comment == null)
+                    return NotFound();
+
+                return Ok(comment);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in AddComment: {ex}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpDelete("{articleId}/comments/{commentId}")]
+        public async Task<IActionResult> DeleteComment(string articleId, string commentId)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var result = await _articleService.DeleteCommentAsync(articleId, commentId, userId);
+                if (!result)
+                    return NotFound();
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in DeleteComment: {ex}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpPost("{id}/share")]
+        public async Task<IActionResult> ShareArticle(string id)
+        {
+            try
+            {
+                var result = await _articleService.ShareArticleAsync(id);
+                if (!result)
+                    return NotFound();
+
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in ShareArticle: {ex}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Article>>> Get()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var articles = await _articleService.GetAllAsync(userId);
+                return Ok(articles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in Get: {ex}");
+                return StatusCode(500, "An error occurred while retrieving the articles.");
+            }
+        }
+    }
+
+    public class CommentDto
+    {
+        public string Content { get; set; } = string.Empty;
     }
 }
 

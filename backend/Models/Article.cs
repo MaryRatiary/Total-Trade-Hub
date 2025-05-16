@@ -5,6 +5,28 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace TTH.Backend.Models
 {
+    public class Comment
+    {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
+
+        [BsonElement("userId")]
+        public string UserId { get; set; } = string.Empty;
+
+        [BsonElement("content")]
+        public string Content { get; set; } = string.Empty;
+
+        [BsonElement("createdAt")]
+        public DateTime CreatedAt { get; set; }
+
+        [BsonIgnore]
+        public string AuthorUsername { get; set; } = string.Empty;
+
+        [BsonIgnore]
+        public string? AuthorProfilePicture { get; set; }
+    }
+
     public class Article
     {
         [BsonId]
@@ -39,6 +61,15 @@ namespace TTH.Backend.Models
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; }
 
+        [BsonElement("likes")]
+        public List<string> Likes { get; set; } = new List<string>();
+
+        [BsonElement("comments")]
+        public List<Comment> Comments { get; set; } = new List<Comment>();
+
+        [BsonElement("shareCount")]
+        public int ShareCount { get; set; } = 0;
+
         [BsonIgnore]
         public string AuthorFirstName { get; set; } = string.Empty;
         [BsonIgnore]
@@ -47,10 +78,10 @@ namespace TTH.Backend.Models
         public string AuthorUsername { get; set; } = string.Empty;
         [BsonIgnore]
         public string? AuthorProfilePicture { get; set; }
+        [BsonIgnore]
+        public bool HasLiked { get; set; }
 
         [BsonIgnore]
-        public string FullImageUrl => !string.IsNullOrEmpty(ImagePath) 
-            ? $"http://localhost:5131{ImagePath}" 
-            : string.Empty;
+        public string FullImageUrl => ImagePath;
     }
 }

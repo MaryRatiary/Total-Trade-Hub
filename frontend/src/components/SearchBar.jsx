@@ -83,10 +83,12 @@ const SearchBar = () => {
         <FaSearch className="search-icon-mobile" onClick={handleSearchIconClick} />
       ) : (
         <div className="search-input-wrapper">
-          <FaSearch className="search-icon" />
+          <div className="search-icon-wrapper">
+            <FaSearch className="search-icon" />
+          </div>
           <input
             type="text"
-            placeholder="Rechercher des publications ou des utilisateurs..."
+            placeholder="Rechercher des contenus, publications, personnes..."
             className="search-input"
             value={searchTerm}
             onChange={(e) => {

@@ -12,47 +12,90 @@ namespace TTH.Backend.Models // Ensure this namespace matches the one imported i
         public string? Id { get; set; }
 
         [BsonRequired]
+        [BsonElement("username")]
         public string Username { get; set; } = string.Empty;
+        
+        [BsonElement("firstName")]
         public string FirstName { get; set; } = string.Empty;
+        
+        [BsonElement("lastName")]
         public string LastName { get; set; } = string.Empty;
+        
+        [BsonElement("email")]
         public string Email { get; set; } = string.Empty;
+        
+        [BsonElement("passwordHash")]
         public string PasswordHash { get; set; } = string.Empty;
+        
+        [BsonElement("profilePicture")]
         public string ProfilePicture { get; set; } = string.Empty;
+        
+        [BsonElement("phone")]
         public string? Phone { get; set; }
+        
+        [BsonElement("residence")]
         public string? Residence { get; set; }
+        
+        [BsonElement("birthdate")]
         public DateTime Birthdate { get; set; }
+        
+        [BsonElement("isRegistrationComplete")]
         public bool IsRegistrationComplete { get; set; }
+        
+        [BsonIgnore]
         public string? Password { get; set; } // Temporaire pour l'authentification
+        
+        [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [BsonElement("faceData")]
         public FaceData? FaceData { get; set; }
 
         [BsonIgnore]
         public virtual ICollection<Article> Articles { get; set; } = new List<Article>();
 
+        [BsonElement("faceImage")]
         public string? FaceImage { get; set; } // Anciennement dans FaceData
 
+        [BsonElement("friends")]
+        public List<string> Friends { get; set; } = new List<string>();
+
         // Notification Settings
+        [BsonElement("pushNotificationsEnabled")]
         public bool PushNotificationsEnabled { get; set; } = true;
+        
+        [BsonElement("emailNotificationsEnabled")]
         public bool EmailNotificationsEnabled { get; set; } = true;
+        
+        [BsonElement("notificationSoundsEnabled")]
         public bool NotificationSoundsEnabled { get; set; } = true;
 
         // Appearance Settings
+        [BsonElement("darkModeEnabled")]
         public bool DarkModeEnabled { get; set; } = false;
+        
+        [BsonElement("theme")]
         public string Theme { get; set; } = "Default";
+        
+        [BsonElement("fontSize")]
         public string FontSize { get; set; } = "Medium";
 
         // Security Settings
+        [BsonElement("twoFactorEnabled")]
         public bool TwoFactorEnabled { get; set; } = false;
+        
+        [BsonElement("lastPasswordChange")]
         public DateTime? LastPasswordChange { get; set; }
 
         // Messaging System
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
         // Friend Request System
+        [BsonElement("sentFriendRequests")]
         public virtual ICollection<FriendRequest> SentFriendRequests { get; set; } = new List<FriendRequest>();
+        
+        [BsonElement("receivedFriendRequests")]
         public virtual ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
-
-        public List<string> Friends { get; set; } = new List<string>();
 
         public bool ValidatePassword(string inputPassword)
         {

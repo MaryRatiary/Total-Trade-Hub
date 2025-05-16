@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaHeart, FaRegHeart, FaComment, FaShare, FaBookmark, FaRegBookmark, FaEdit, FaEye, FaTrash } from 'react-icons/fa';
 import './ArticleCard.css';
 import { API_BASE_URL } from '../services/config';
+import { likeArticle, addComment, deleteComment, shareArticle } from '../services/articleService';
 
 const ArticleCard = ({ article, onDelete, onEdit }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -63,16 +64,28 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikes(isLiked ? likes - 1 : likes + 1);
+  const handleLike = async () => {
+    try {
+      await likeArticle(article.id);
+      setIsLiked(!isLiked);
+      setLikes(isLiked ? likes - 1 : likes + 1);
+    } catch (error) {
+      console.error('Error liking article:', error);
+      alert('Erreur lors du like');
+    }
   };
 
-  const handleComment = (e) => {
+  const handleComment = async (e) => {
     e.preventDefault();
-    if (comment.trim()) {
-      setComments([...comments, { text: comment, user: "Utilisateur actuel" }]);
+    if (!comment.trim()) return;
+
+    try {
+      const newComment = await addComment(article.id, comment.trim());
+      setComments([...comments, newComment]);
       setComment('');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Erreur lors de l\'ajout du commentaire');
     }
   };
 
@@ -225,7 +238,15 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
           <button onClick={() => setShowComments(!showComments)} className="action-button">
             <FaComment />
           </button>
-          <button className="action-button">
+          <button className="action-button" onClick={async () => {
+            try {
+              await shareArticle(article.id);
+              alert('Article partagé avec succès');
+            } catch (error) {
+              console.error('Error sharing article:', error);
+              alert('Erreur lors du partage');
+            }
+          }}>
             <FaShare />
           </button>
         </div>
@@ -258,10 +279,35 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
       {showComments && (
         <div className="comments-section">
           <div className="comments-list">
-            {comments.map((comment, index) => (
-              <div key={index} className="comment">
-                <span className="comment-username">{comment.user}</span>
-                <span className="comment-text">{comment.text}</span>
+            {comments.map((comment) => (
+              <div key={comment.id} className="comment">
+                <div className="comment-content">
+                  <img 
+                    src={comment.authorProfilePicture || '/default-avatar.png'} 
+                    alt={comment.authorUsername}
+                    className="comment-avatar"
+                  />
+                  <div className="comment-details">
+                    <span className="comment-username">{comment.authorUsername}</span>
+                    <span className="comment-text">{comment.content}</span>
+                  </div>
+                </div>
+                {comment.userId === localStorage.getItem('userId') && (
+                  <button 
+                    onClick={async () => {
+                      try {
+                        await deleteComment(article.id, comment.id);
+                        setComments(comments.filter(c => c.id !== comment.id));
+                      } catch (error) {
+                        console.error('Error deleting comment:', error);
+                        alert('Erreur lors de la suppression du commentaire');
+                      }
+                    }} 
+                    className="delete-comment-btn"
+                  >
+                    <FaTrash />
+                  </button>
+                )}
               </div>
             ))}
           </div>

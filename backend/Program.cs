@@ -12,9 +12,16 @@ using TTH.Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add this before other service configurations
+// Configure file serving options
 builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
 builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+// Ensure wwwroot/uploads directory exists
+var uploadsPath = Path.Combine(builder.Environment.WebRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -31,16 +38,35 @@ builder.Services.AddSwaggerGen(c =>
 
 // Configure MongoDB
 var mongoSettings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
-var mongoClient = new MongoClient(new MongoClientSettings
+var mongoClient = new MongoClient(mongoSettings.ConnectionString);
+var database = mongoClient.GetDatabase(mongoSettings.DatabaseName);
+
+// Ensure indexes exist
+var articleCollection = database.GetCollection<Article>("articles");
+var userCollection = database.GetCollection<User>("users");
+
+// Create indexes if they don't exist
+var articleIndexes = articleCollection.Indexes.List().ToList();
+if (!articleIndexes.Any(i => i["name"] == "userId_1"))
 {
-    Server = new MongoServerAddress("localhost", 27017),
-    Credential = MongoCredential.CreateCredential("admin", "root", "example"),
-    ServerSelectionTimeout = TimeSpan.FromSeconds(5),
-    ConnectTimeout = TimeSpan.FromSeconds(5),
-    MaxConnectionPoolSize = 100,
-    RetryWrites = true
-});
+    var indexKeysDefinition = Builders<Article>.IndexKeys.Ascending(a => a.UserId);
+    articleCollection.Indexes.CreateOne(new CreateIndexModel<Article>(indexKeysDefinition));
+}
+
+var userIndexes = userCollection.Indexes.List().ToList();
+if (!userIndexes.Any(i => i["name"] == "username_1"))
+{
+    var usernameIndex = Builders<User>.IndexKeys.Ascending(u => u.Username);
+    userCollection.Indexes.CreateOne(new CreateIndexModel<User>(usernameIndex, new CreateIndexOptions { Unique = true }));
+}
+if (!userIndexes.Any(i => i["name"] == "email_1"))
+{
+    var emailIndex = Builders<User>.IndexKeys.Ascending(u => u.Email);
+    userCollection.Indexes.CreateOne(new CreateIndexModel<User>(emailIndex, new CreateIndexOptions { Unique = true }));
+}
+
 builder.Services.AddSingleton<IMongoClient>(mongoClient);
+builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDb"));
 builder.Services.AddScoped<ArticleService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<MessageService>();
@@ -52,18 +78,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", corsBuilder =>
     {
-        corsBuilder
-            .SetIsOriginAllowed(origin => 
-            {
-                var allowedOrigins = new[]
-                {
-                    "http://localhost:5173",
-                    "http://192.168.43.53:5173",
-                    "http://192.168.43.53:5131",
-                    "http://localhost:5131"
-                };
-                return allowedOrigins.Contains(origin);
-            })
+        corsBuilder            .SetIsOriginAllowed(origin => true) // Permettre toutes les origines en développement
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
@@ -107,13 +122,6 @@ using (var scope = app.Services.CreateScope())
 {
     var userService = scope.ServiceProvider.GetRequiredService<UserService>();
     await userService.InitializeIndexesAsync();
-}
-
-// Ensure wwwroot/uploads directory exists
-var uploadsPath = Path.Combine(app.Environment.WebRootPath, "uploads");
-if (!Directory.Exists(uploadsPath))
-{
-    Directory.CreateDirectory(uploadsPath);
 }
 
 // Configure Kestrel for all network interfaces

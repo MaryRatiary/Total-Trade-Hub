@@ -213,6 +213,13 @@ class ApiService {
         });
     }
 
+    getAuthHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders()
+        };
+    }
+
     async handleResponse(response) {
         const data = await response.json();
         if (!response.ok) {
@@ -222,4 +229,6 @@ class ApiService {
     }
 }
 
+// Create and export a single instance of ApiService
 export const apiService = new ApiService();
+export { fetchWithRetry };

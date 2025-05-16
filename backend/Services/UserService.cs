@@ -9,12 +9,24 @@ namespace TTH.Backend.Services
     {
         private readonly IMongoCollection<User> _users;
         private readonly ILogger<UserService> _logger;
+        private readonly MongoDbSettings _settings;
 
         public UserService(IMongoClient mongoClient, IConfiguration config, ILogger<UserService> logger)
         {
-            var database = mongoClient.GetDatabase(config.GetSection("MongoDb:DatabaseName").Value);
-            _users = database.GetCollection<User>("Users");
-            _logger = logger;
+            _settings = config.GetSection("MongoDb").Get<MongoDbSettings>() ?? 
+                throw new ArgumentNullException(nameof(config), "MongoDB settings not found in configuration");
+            
+            try
+            {
+                var database = mongoClient.GetDatabase(_settings.DatabaseName);
+                _users = database.GetCollection<User>(_settings.UsersCollectionName);
+                _logger = logger;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error initializing UserService: {ex}");
+                throw;
+            }
         }
 
         public async Task<List<User>> GetAllUsersAsync() =>
@@ -34,17 +46,17 @@ namespace TTH.Backend.Services
             return await _users.Find(u => u.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task<User> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             try
             {
-                var user = await _users.Find(x => x.Email == email).FirstOrDefaultAsync();
-                return user;
+                var filter = Builders<User>.Filter.Eq(u => u.Email, email);
+                return await _users.Find(filter).FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error getting user by email: {ex}");
-                throw new Exception("Une erreur est survenue lors de la récupération de l'utilisateur", ex);
+                return null;
             }
         }
 
@@ -97,6 +109,10 @@ namespace TTH.Backend.Services
                 
                 await _users.Indexes.CreateOneAsync(indexModel);
                 _logger.LogInformation("MongoDB indexes initialized successfully");
+            }
+            catch (MongoAuthenticationException ex)
+            {
+                _logger.LogWarning("MongoDB authentication not required: {Message}", ex.Message);
             }
             catch (Exception ex)
             {
