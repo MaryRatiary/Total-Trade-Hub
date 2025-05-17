@@ -22,8 +22,8 @@ namespace TTH.Backend.Controllers
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _baseUrl = webHostEnvironment.IsDevelopment() 
-                ? "http://192.168.43.223:5131"  // URL de développement
-                : "http://192.168.43.223:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.88.64:5131"  // URL de développement
+                : "http://192.168.88.64:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         private string GetFullUrl(string? path)

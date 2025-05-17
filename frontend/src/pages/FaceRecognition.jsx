@@ -34,26 +34,48 @@ const FaceRecognition = () => {
         console.log('Modèles chargés avec succès');
       } catch (error) {
         console.error('Erreur lors du chargement des modèles:', error);
+        alert('Erreur lors du chargement des modèles de détection faciale.');
       }
     };
+
     loadModels();
+
+    // Cleanup function to stop media tracks when component unmounts
+    return () => {
+      if (webcamRef.current && webcamRef.current.stream) {
+        const tracks = webcamRef.current.stream.getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const capture = async () => {
-    if (!webcamRef.current) return;
+    try {
+      if (!webcamRef.current) return;
 
-    const imageSrc = webcamRef.current.getScreenshot();
-    setImage(imageSrc);
-    setIsLoading(true);
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) {
+        console.error('Failed to capture image');
+        return;
+      }
 
-    const img = new Image();
-    img.src = imageSrc;
+      setImage(imageSrc);
+      setIsLoading(true);
 
-    img.onload = async () => {
+      const img = new Image();
+      img.src = imageSrc;
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('Failed to load captured image'));
+      });
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = img.width;
       canvas.height = img.height;
+      if (!ctx) throw new Error('Failed to get canvas context');
+
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
       const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions());
@@ -65,7 +87,11 @@ const FaceRecognition = () => {
       if (detections.length > 0) {
         await saveFaceData(detections, imageSrc);
       }
-    };
+    } catch (error) {
+      console.error('Error capturing or processing image:', error);
+      setIsLoading(false);
+      setIsValid(false);
+    }
   };
 
   const saveFaceData = async (detections, imageData) => {
@@ -111,6 +137,11 @@ const FaceRecognition = () => {
     }
   };
 
+  const handleWebcamError = (error) => {
+    console.error('Webcam error:', error);
+    alert('Problème avec la webcam: ' + error.message);
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
@@ -122,7 +153,7 @@ const FaceRecognition = () => {
               audio={false}
               ref={webcamRef}
               screenshotFormat="image/jpeg"
-              onUserMediaError={(error) => alert('Problème avec la webcam: ' + error.message)}
+              onUserMediaError={handleWebcamError}
               className="w-full h-full object-cover"
               videoConstraints={{ facingMode: 'user' }}
             />
