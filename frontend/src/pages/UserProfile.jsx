@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Spinner from '../components/Spinner';
+import { FaCamera, FaEdit } from 'react-icons/fa';
 import { API_BASE_URL } from '../services/config';
+import './UserProfile.css';
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
@@ -10,11 +13,13 @@ const UserProfile = () => {
   const [friendsCount, setFriendsCount] = useState(0);
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const coverFileInputRef = useRef(null);
   const { userId } = useParams();
   const [showPhotoDropdown, setShowPhotoDropdown] = useState(false);
   const [previousPhotos, setPreviousPhotos] = useState([]);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [friendRequestStatus, setFriendRequestStatus] = useState(null); // 'pending', 'accepted', null
+  const [coverHovered, setCoverHovered] = useState(false);
 
   const loadUserProfile = async () => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -127,6 +132,43 @@ const UserProfile = () => {
       }
     } catch (error) {
       console.error('Error updating profile picture:', error);
+    }
+  };
+
+  const handleCoverPictureChange = async (event) => {
+    if (!isOwnProfile) return;
+    
+    const file = event.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file, file.name);
+
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const response = await fetch(`${API_BASE_URL}/users/cover-picture`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${currentUser.token}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload cover picture');
+        }
+
+        const result = await response.json();
+        if (result.coverPictureUrl) {
+          setUser(prev => ({
+            ...prev,
+            CoverPicture: result.coverPictureUrl
+          }));
+          event.target.value = '';
+        }
+      } catch (error) {
+        console.error('Error uploading cover picture:', error);
+        alert(error.message);
+      }
     }
   };
 
@@ -259,22 +301,33 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-gray-100">
         <Navbar />
-        <div className="container mx-auto px-4 py-8 mt-20">
-          <div className="text-center">
-            <p className="text-xl text-gray-600">Chargement du profil...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-100">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 mt-20">
-          <div className="text-center">
-            <p className="text-xl text-red-600">Erreur: {error}</p>
+        <div className="container mx-auto px-4 max-w-5xl mt-6">
+          <div className="profile-header-section">
+            {/* Skeleton Cover */}
+            <div className="skeleton skeleton-cover"></div>
+            
+            {/* Skeleton Profile Info */}
+            <div className="relative">
+              {/* Skeleton Avatar */}
+              <div className="skeleton skeleton-avatar"></div>
+              
+              <div className="profile-info">
+                {/* Skeleton Name and Status */}
+                <div className="skeleton skeleton-text title"></div>
+                <div className="skeleton skeleton-text subtitle"></div>
+                
+                {/* Skeleton Description */}
+                <div className="skeleton skeleton-text" style={{width: "60%"}}></div>
+                <div className="skeleton skeleton-text" style={{width: "40%"}}></div>
+              </div>
+              
+              {/* Skeleton Tabs */}
+              <div className="profile-tabs">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="skeleton skeleton-text" style={{width: "80px", height: "20px"}}></div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -284,149 +337,146 @@ const UserProfile = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-      <div className="mt-10 container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-7xl mt-8 ">
         {user ? (
-          <>
-            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-              {/* Profile Content */}
-              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8">
-                <div className="relative">
-                  {/* Profile Image */}
-                  <div 
-                    className="w-40 h-40 rounded-full border-2 border-gray-200 overflow-hidden cursor-pointer"
-                    onClick={() => setShowPhotoDropdown(!showPhotoDropdown)}
+          <div className="profile-header-section">
+            {/* Cover Photo */}
+            <div className="profile-cover">
+              <img
+                src={user.CoverPicture || '/defaults/default-cover.jpg'}
+                alt="Cover"
+                className="w-full h-full object-cover"
+              />
+              {isOwnProfile && (
+                <div className="cover-overlay">
+                  <button
+                    onClick={() => coverFileInputRef.current.click()}
+                    className="cover-edit-button"
                   >
-                    <img
-                      src={user.ProfilePicture || '/default-avatar.png'} 
-                      alt={`${user.FirstName} ${user.LastName}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  {/* Photo Upload Button */}
-                  {isOwnProfile && (
-                    <>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        onChange={handleFileChange}
-                        accept="image/*"
-                      />
-                      <button
-                        onClick={() => fileInputRef.current.click()}
-                        className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                    </>
-                  )}
-
-                  {/* Photos Dropdown */}
-                  {showPhotoDropdown && (
-                    <div className="absolute top-full mt-2 w-64 bg-white rounded-lg shadow-lg z-10">
-                      <div className="p-2">
-                        <h3 className="font-semibold mb-2">Mes photos</h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          {previousPhotos.map((photo, index) => (
-                            <div key={index} className="relative group">
-                              <img
-                                src={photo.url}
-                                alt={`Previous ${index + 1}`}
-                                className="w-full h-16 object-cover rounded cursor-pointer"
-                                onClick={() => handleSelectPhoto(photo.url)}
-                              />
-                              <button
-                                onClick={() => handleDeletePhoto(photo.id)}
-                                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100"
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                    <FaCamera /> Modifier la photo de couverture
+                  </button>
                 </div>
+              )}
+              <input
+                type="file"
+                ref={coverFileInputRef}
+                className="hidden"
+                onChange={handleCoverPictureChange}
+                accept="image/*"
+              />
+            </div>
 
-                <div className="flex-1">
-                  {/* User Info */}
-                  <div className="flex flex-col space-y-3">
-                    <h1 className="text-2xl font-semibold">{user.FirstName} {user.LastName}</h1>
-                    <p className="text-gray-600">email: {user.Email}</p>
-                    <p className="text-gray-500">contact: {user.Phone || 'No phone number'}</p>
-                    <p className="text-gray-500">habite a {user.Residence || 'No address'}</p>
-                    <p className="text-gray-500">Amis: {friendsCount}</p>
-                    
-                    {/* Bouton d'ajout d'ami */}
-                    {!isOwnProfile && (
-                      <div className="mt-4">
+            {/* Profile Info Section */}
+            <div className="relative">
+              {/* Profile Picture */}
+              <div className="profile-picture-container">
+                <img
+                  src={user.ProfilePicture || '/default-avatar.png'}
+                  alt={`${user.FirstName} ${user.LastName}`}
+                  className="w-full h-full object-cover"
+                />
+                {isOwnProfile && (
+                  <>
+                    <div className="picture-edit-overlay" onClick={() => fileInputRef.current.click()}>
+                      <FaCamera color="white" size={24} />
+                    </div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* Profile Info */}
+              <div className="profile-info">
+                <div className="profile-header">
+                  <div>
+                    <h1 className="profile-name">{user.FirstName} {user.LastName}</h1>
+                    <p className="profile-subtitle">{friendsCount} amis</p>
+                  </div>
+                  {!isOwnProfile && (
+                    <div className="profile-actions">
+                      <div className="flex gap-2">
                         {friendRequestStatus === 'accepted' ? (
-                          <button 
-                            className="bg-green-500 text-white px-4 py-2 rounded-md opacity-50 cursor-not-allowed"
-                            disabled
-                          >
-                            Déjà amis
-                          </button>
+                          <>
+                            <button className="friend-button secondary" disabled>
+                              Amis
+                            </button>
+                            <button
+                              onClick={() => navigate(`/messages/${userId}`)}
+                              className="friend-button primary"
+                            >
+                              Envoyer un message
+                            </button>
+                          </>
                         ) : friendRequestStatus === 'pending' ? (
-                          <button 
-                            className="bg-yellow-500 text-white px-4 py-2 rounded-md opacity-50 cursor-not-allowed"
-                            disabled
-                          >
-                            Demande en attente
+                          <button className="friend-button secondary" disabled>
+                            Demande envoyée
                           </button>
                         ) : (
-                          <button 
-                            onClick={handleSendFriendRequest}
-                            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-                          >
-                            Ajouter en ami
-                          </button>
+                          <>
+                            <button
+                              onClick={handleSendFriendRequest}
+                              className="friend-button primary"
+                            >
+                              Ajouter en ami
+                            </button>
+                            <button
+                              onClick={() => navigate(`/messages/${userId}`)}
+                              className="friend-button secondary"
+                            >
+                              Envoyer un message
+                            </button>
+                          </>
                         )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tabs */}
+                <div className="profile-tabs">
+                  <div className="profile-tab active">Publications</div>
+                  <div className="profile-tab">À propos</div>
+                  <div className="profile-tab">Amis</div>
+                  <div className="profile-tab">Photos</div>
                 </div>
               </div>
             </div>
+          </div>
+        ) : null}
 
-            {/* Articles Grid */}
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">
-                Publications ({user.Articles?.length || 0})
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {user.Articles?.map(article => (
-                  <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <img
-                      src={article.imagePath || '/placeholder.jpg'}
-                      alt={article.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-semibold text-lg mb-2">{article.title}</h3>
-                      <p className="text-gray-600 text-sm mb-2">{article.description}</p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-blue-600 font-semibold">
-                          {article.price ? `${new Intl.NumberFormat('fr-FR').format(article.price)} Ar` : 'Prix non spécifié'}
-                        </span>
-                        <span className="text-gray-500 text-sm">
-                          {new Date(article.createdAt).toLocaleDateString('fr-FR')}
-                        </span>
-                      </div>
+        {/* Articles Grid */}
+        {user?.Articles && user.Articles.length > 0 && (
+          <div className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {user.Articles.map(article => (
+                <div key={article.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <img
+                    src={article.imagePath || '/placeholder.jpg'}
+                    alt={article.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{article.title}</h3>
+                    <p className="text-gray-600 text-sm mb-2">{article.description}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-600 font-semibold">
+                        {article.price ? `${new Intl.NumberFormat('fr-FR').format(article.price)} Ar` : 'Prix non spécifié'}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        {new Date(article.createdAt).toLocaleDateString('fr-FR')}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          </>
-        ) : (
-          <div className="text-center py-8">Chargement du profil...</div>
+          </div>
         )}
       </div>
     </div>

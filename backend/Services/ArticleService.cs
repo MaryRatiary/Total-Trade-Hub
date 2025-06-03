@@ -344,5 +344,39 @@ namespace TTH.Backend.Services
                 throw;
             }
         }
+
+        public async Task<bool> IncrementViewsAsync(string articleId)
+        {
+            try
+            {
+                _logger.LogInformation($"Incrementing views for article {articleId}");
+                var filter = Builders<Article>.Filter.Eq(a => a.Id, articleId);
+                var update = Builders<Article>.Update.Inc(a => a.Views, 1);
+                var result = await _articles.UpdateOneAsync(filter, update);
+                return result.ModifiedCount > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error incrementing views for article {articleId}: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                return false;
+            }
+        }
+
+        public async Task<int> GetViewsAsync(string articleId)
+        {
+            try
+            {
+                _logger.LogInformation($"Getting views for article {articleId}");
+                var article = await _articles.Find(a => a.Id == articleId).FirstOrDefaultAsync();
+                return article?.Views ?? 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting views for article {articleId}: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                return 0;
+            }
+        }
     }
 }

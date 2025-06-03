@@ -39,18 +39,18 @@
   background: #0073e6;
 }
 
-.search-bar {
+.message-search-bar {
   padding: 8px 16px;
   border-bottom: 1px solid #e4e6eb;
 }
 
-.search-input {
+.message-search-input {
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 40px;
   border-radius: 50px;
   border: none;
-  background-color: #f0f2f5;
   font-size: 15px;
+  background: #f0f2f5;
 }
 
 .conversations-container {
@@ -301,6 +301,10 @@
 .modal-search {
   padding: 8px 16px;
   border-bottom: 1px solid #e4e6eb;
+}
+
+.modal-search .message-search-input {
+  background: #f0f2f5;
 }
 
 .friends-list {

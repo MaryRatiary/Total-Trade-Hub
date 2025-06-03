@@ -1,391 +1,223 @@
+/* Style de base avec effet glass morphism et néon */
 .navbar {
   display: flex;
-  background: linear-gradient(to right, #1f2937, #2d3748);
+  flex-direction: column;
+  background: rgba(20, 20, 40, 0.7);
   position: fixed;
-  width: calc(100% - 40px);
-  top: 0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 95%;
   height: 70px;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(109, 74, 255, 0.2),
+    0 0 10px rgba(109, 74, 255, 0.1);
+  padding: 0 25px;
+  justify-content: center;
   z-index: 1000;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 15px;
-  margin: 10px 20px;
-  justify-content: space-between !important;
-  align-items: center !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Style du bouton hamburger */
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 0.5rem;
-  z-index: 1000;
-  transition: transform 0.3s ease;
-}
-
-.menu-toggle:hover {
-  color: #f69c02;
-}
-
-.menu-toggle.active {
-  transform: rotate(90deg);
-}
-
-.navbar-brand {
-  display: flex;
+  margin: 0 auto;
+  justify-content: space-between;
   align-items: center;
-  font-size: 19px;
-  font-weight: bold;
-  color: #ffffff;
-  justify-content: space-around;
-  width: 100%;
-  margin-top: 10px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 25px;
+  overflow: hidden;
 }
 
-.navbar-links {
-  display: flex;
-  list-style: none;
-  color: #ffffff;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 2rem;
+/* Effet de bordure animée */
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6d4aff, #ff4a6d, #4aff6d, #6d4aff);
+  background-size: 300% 100%;
+  animation: gradientBorder 8s linear infinite;
+  z-index: -1;
 }
 
-.navbar-links li {
-  position: relative;
-  font-family: 'Inter', sans-serif;
+@keyframes gradientBorder {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
 }
 
-.navbar-links a {
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.navbar-links a:hover {
-  color: #f69c02;
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px);
-}
-
-.navbar-links a:active {
-  transform: translateY(0);
-}
-
-.navbar-links a svg {
-  transition: transform 0.3s ease;
-}
-
-.navbar-links a:hover svg {
-  transform: scale(1.1);
-}
-
-.nav-link {
-  display: block;
-  padding: 0.5rem 1rem;
-  color: #ffffff;
-  text-decoration: none;
-  transition: color 0.3s ease;
-  
-}
-
-.nav-link:hover {
-  color: #f69c02;
-}
-
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  margin-left: auto;
-  padding: 0.5rem;
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  .navbar {
-    padding: 0 1rem;
-    height: 60px;
-    margin: 0;
-    width: 100%;
-    border-radius: 0;
-    justify-content: space-between;
-    background: linear-gradient(135deg, #1f2937, #1a365d);
-    position: fixed;
-    backdrop-filter: blur(10px);
-  }
-
-  .navbar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('/tth-removebg.png') center/50px no-repeat;
-    opacity: 0.1;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .navbar-brand {
-    position: relative;
-    z-index: 1;
-  }
-
-  .navbar-logo {
-    display: none;
-  }
-
-  .navbar-links {
-    display: flex !important;
-    position: relative;
-    width: auto;
-    background: none;
-    padding: 0;
-    margin: 0;
-    align-items: center;
-    justify-content: center;
-    gap:10px;
-    z-index: 1;
-  }
-
-  .navbar-links li {
-    margin: 0 10px;
-  }
-
-  .navbar-links a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px;
-    color: #ffffff;
-  }
-
-  .navbar-links a span {
-    display: none;
-  }
-
-  .navbar-links svg {
-    margin: 0;
-    font-size: 24px;
-  }
-
-  .search-container {
-    position: relative;
-    flex: 1;
-    max-width: 300px;
-    margin: 0 15px;
-    z-index: 1;
-  }
-
-  .notification-container {
-    margin: 0 8px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .notification-button {
-    padding: 6px;
-  }
-
-  .notification-badge {
-    min-width: 16px;
-    height: 16px;
-    font-size: 10px;
-  }
-
-  .notifications-dropdown {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-height: calc(100vh - 60px);
-    border-radius: 0;
-    margin: 0;
-  }
-
-  .menu-toggle {
-    display: none;
-  }
-
-  /* Cacher les textes des liens en mode mobile */
-  .bizina,
-  .navbar-links li a span {
-    display: none !important;
-  }
-
-  /* Ajuster l'espacement des icônes */
-  .navbar-links li a svg {
-    margin: 0;
-  }
-
-  /* Style des icônes au survol */
-  .navbar-links li a:hover svg {
-    color: #f69c02;
-    transform: scale(1.1);
-    transition: all 0.3s ease;
-  }
-}
-
-/* Déplacer les styles du logo en dehors du media query */
+/* Logo avec effet holographique */
 .navbar-logo {
   width: 50px;
   height: 50px;
   margin-right: 20px;
-  transition: transform 0.3s ease;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: all 0.5s ease;
+  filter: 
+    drop-shadow(0 0 5px rgba(109, 74, 255, 0.7))
+    brightness(1.1);
+  position: relative;
+  z-index: 1;
+  display: block;
 }
 
 .navbar-logo:hover {
-  transform: scale(1.05);
+  transform: 
+    scale(1.1) 
+    rotate(5deg);
+  filter: 
+    drop-shadow(0 0 10px rgba(109, 74, 255, 0.9))
+    brightness(1.2);
 }
 
-.notification-container {
-  position: relative;
+/* Liens de navigation avec effet futuriste */
+.navbar-links {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
-  margin: 0 15px;
+  gap: 20px;
+  padding: 10px 20px;
+  justify-content: space-around;
+  background: rgba(20, 20, 40, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1001;
 }
 
-.notification-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  cursor: pointer;
-  padding: 10px;
-  position: relative;
+.navbar-links > li {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(4px);
 }
 
-.notification-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.navbar-links a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.notification-button:active {
-  transform: translateY(0);
+.navbar-links a span {
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.notification-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #f69c02;
-  transform: scale(1.05);
-}
-
-.notification-badge {
+.navbar-links a::before {
+  content: '';
   position: absolute;
   top: 0;
-  right: 0;
-  background: #f69c02;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(109, 74, 255, 0.2), rgba(255, 74, 109, 0.2));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6d4aff, #ff4a6d);
+  transition: width 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #fff;
+  transform: translateY(-3px);
+}
+
+.navbar-links a:hover::before {
+  opacity: 1;
+}
+
+.navbar-links a:hover::after {
+  width: 70%;
+}
+
+.navbar-links a svg {
+  transition: all 0.3s ease;
+  margin-bottom: 5px;
+}
+
+.navbar-links a:hover svg {
+  transform: scale(1.2);
+  color: #6d4aff;
+  filter: drop-shadow(0 0 5px rgba(109, 74, 255, 0.7));
+}
+
+/* Notification badge avec effet pulse */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #ff4a6d, #ff6b6b);
   color: white;
-  font-size: 11px;
+  font-size: 10px;
   min-width: 18px;
   height: 18px;
-  border-radius: 9999px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  padding: 0 5px;
-  transform: translate(25%, -25%);
+  font-weight: bold;
+  animation: pulse 2s infinite;
   border: 2px solid #1f2937;
 }
 
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+Menu déroulant des notifications
 .notifications-dropdown {
   position: absolute;
-  top: calc(100% + 15px);
-  right: -10px;
-  width: 350px;
-  background: linear-gradient(to bottom, #1f2937, #2d3748);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  right: 0;
+  width: 380px;
+  background: rgba(30, 30, 60, 0.95);
+  border-radius: 20px;
+  border: 1px solid rgba(109, 74, 255, 0.3);
+  backdrop-filter: blur(15px);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(109, 74, 255, 0.2);
+  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
   z-index: 1000;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.notifications-header {
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.notifications-header h3 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.notifications-list {
-  max-height: 400px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-.notifications-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.notifications-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.notifications-list::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
 }
 
 .notification-item {
   padding: 16px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
+  margin: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .notification-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateX(4px);
+  background: rgba(109, 74, 255, 0.1);
+  transform: translateY(-2px);
 }
 
 .notification-item::before {
@@ -395,105 +227,200 @@
   top: 0;
   height: 100%;
   width: 3px;
-  background: #f69c02;
+  background: linear-gradient(to bottom, #6d4aff, #ff4a6d);
   opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.notification-item.unread {
-  background: rgba(246, 156, 2, 0.05);
+  transition: opacity 0.3s ease;
 }
 
 .notification-item.unread::before {
   opacity: 1;
 }
 
-.notification-message {
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 6px 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 500;
-}
-
-.notification-time {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.notification-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.notification-actions button {
-  padding: 8px 16px;
+/* Boutons avec effet néon */
+.accept-button, .reject-button {
+  padding: 10px 20px;
+  border: none;
   border-radius: 8px;
-  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex: 1;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
 .accept-button {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: linear-gradient(135deg, #38A169, #2F855A);
   color: white;
-  border: none;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
 
 .accept-button:hover {
-  background: linear-gradient(135deg, #16a34a, #15803d);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-}
-
-.accept-button:active {
-  transform: translateY(0);
+  box-shadow: 0 0 15px rgba(56, 161, 105, 0.6);
+  transform: translateY(-2px);
 }
 
 .reject-button {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, #E53E3E, #C53030);
   color: white;
-  border: none;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .reject-button:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.reject-button:active {
-  transform: translateY(0);
-}
-
-.no-notifications {
-  padding: 16px;
-  text-align: center;
-  color: #9CA3AF;
-}
-
+  box-shadow: 0 0 15px rgba(229, 62, 62, 0.6);
+  transform: translateY(-2px);
+}  /* Style pour mobile */
+/* Responsive styles for mobile devices */
 @media (max-width: 768px) {
-  .notifications-dropdown {
+  .navbar {
+    width: 100%;
+    min-height: 70px;
+    padding: 10px 15px;
+    border-radius: 0;
+    top: 0;
+    background: rgba(15, 15, 30, 0.948);
+    transform: none;
+    left: 0;
+  }
+
+  .navbar-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    gap: 10px;
+  }
+  
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .navbar-links {
     position: fixed;
-    top: 60px;
+    bottom: 0;
     left: 0;
     right: 0;
-    width: 100%;
-    max-height: calc(100vh - 60px);
-    border-radius: 0;
-    margin: 0;
+    padding: 10px;
+    background: rgba(15, 15, 30, 0.95);
+    backdrop-filter: blur(10px);
   }
+
+  .navbar .search-container {
+    position: relative;
+    width: 100%;
+    max-width: 200px;
+    min-width: 0;
+    margin: 0;
+    flex: 1;
+  }
+
+  .navbar-links a span {
+    display: none;
+  }
+}
+
+
+/* Animation pour le dropdown */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Effet spécial au survol de la navbar */
+.navbar:hover {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(109, 74, 255, 0.3),
+    0 0 15px rgba(109, 74, 255, 0.2);
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.navbar-top {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 15px;
+  gap: 15px;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: fit-content;
+  flex-shrink: 0;
+}
+
+/* Style pour la zone de recherche dans la navbar */
+.navbar .search-container {
+  flex: 1;
+  max-width: 300px;
+  margin: 0;
+  min-width: 0;
+}
+
+/* Bouton de notification */
+.notification-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.notification-button:hover {
+  background: rgba(109, 74, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(109, 74, 255, 0.3);
+}
+
+.notification-button svg {
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.notification-button:hover svg {
+  color: #6d4aff;
+  transform: scale(1.1);
+}
+
+/* Conteneur de notification */
+.notification-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Dropdown des notifications */
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+  margin-top: 8px;
 }

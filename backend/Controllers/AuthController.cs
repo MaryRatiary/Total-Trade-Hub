@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using TTH.Backend.Models;
 using TTH.Backend.Models.DTOs;
 using TTH.Backend.Models.DTOs.Auth;  // This is the namespace we want to use
@@ -31,14 +32,8 @@ namespace TTH.Backend.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register([FromBody] UserRegistrationDto request)
+        public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var user = await _userService.GetByEmailAsync(request.Email);
-            if (user != null)
-            {
-                return BadRequest(new { message = "User already exists" });
-            }
-
             try
             {
                 if (!ModelState.IsValid)
@@ -46,44 +41,28 @@ namespace TTH.Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var newUser = new User
+                var user = new User
                 {
-                    Email = request.Email,
-                    Username = request.Username,
-                    FirstName = request.FirstName,
-                    LastName = request.LastName,
-                    PasswordHash = BC.HashPassword(request.Password),
-                    Phone = request.Phone,
-                    Residence = request.Residence,
-                    Birthdate = request.Birthdate ?? DateTime.UtcNow,
-                    FaceImage = request.FaceImage,
-                    IsRegistrationComplete = true
+                    Email = model.Email.Trim().ToLower(),
+                    Username = "" // Définir une valeur vide par défaut
                 };
 
-                await _userService.CreateAsync(newUser);
+                // Hash the password using BCrypt
+                user.PasswordHash = BC.HashPassword(model.Password);
+
+                await _userService.CreateAsync(user);
                 
-                var token = GenerateJwtToken(newUser);
-                
-                return Ok(new { 
-                    message = "User registered successfully",
-                    token = token,
-                    user = new {
-                        id = newUser.Id,
-                        username = newUser.Username,
-                        email = newUser.Email,
-                        firstName = newUser.FirstName,
-                        lastName = newUser.LastName,
-                        phone = newUser.Phone,
-                        residence = newUser.Residence,
-                        faceImage = newUser.FaceImage,
-                        birthdate = newUser.Birthdate
-                    }
-                });
+                return Ok(new { message = "Inscription réussie" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError($"Registration error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Registration error: {ex.Message}");
-                return StatusCode(500, new { message = "An error occurred during registration" });
+                return StatusCode(500, new { message = "Une erreur est survenue lors de l'inscription." });
             }
         }
 
@@ -107,6 +86,7 @@ namespace TTH.Backend.Controllers
                     return Unauthorized(new { message = "Email ou mot de passe invalide" });
                 }
 
+                // Use BCrypt for password verification
                 if (!BC.Verify(loginDto.Password, user.PasswordHash))
                 {
                     _logger.LogWarning($"Login failed: Invalid password for email {loginDto.Email}");
@@ -223,6 +203,12 @@ namespace TTH.Backend.Controllers
     }
 
     public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class RegisterModel
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;

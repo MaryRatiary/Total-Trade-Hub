@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './MessagesPage.css';
 import Navbar from '../components/Navbar';
+import Spinner from '../components/Spinner';
 import { API_BASE_URL } from '../services/config';
 
 const MessagesPage = () => {
@@ -271,11 +272,11 @@ const MessagesPage = () => {
             </button>
           </div>
           
-          <div className="search-bar">
+          <div className="message-search-bar">
             <input
               type="text"
               placeholder="Rechercher une conversation..."
-              className="search-input"
+              className="message-search-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -383,7 +384,7 @@ const MessagesPage = () => {
                   placeholder="Rechercher un ami..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
+                  className="message-search-input"
                 />
               </div>
               <div className="friends-list">

@@ -24,7 +24,7 @@ namespace TTH.Backend.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error initializing UserService: {ex}");
+                _logger?.LogError($"Error initializing UserService: {ex}");
                 throw;
             }
         }
@@ -62,20 +62,37 @@ namespace TTH.Backend.Services
 
         public async Task<User> CreateAsync(User user)
         {
-            try
+            // Validation avant création
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ArgumentException("L'email ne peut pas être vide.");
+            }
+
+            user.Email = user.Email.Trim();
+
+            // Vérifier si l'email existe déjà
+            var existingEmail = await _users.Find(u => u.Email == user.Email).FirstOrDefaultAsync();
+            if (existingEmail != null)
+            {
+                throw new InvalidOperationException("Cet email existe déjà.");
+            }
+
+            try 
             {
                 await _users.InsertOneAsync(user);
                 return user;
             }
-            catch (MongoWriteException ex) when (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
+            catch (MongoWriteException ex)
             {
-                _logger.LogError($"Duplicate key error creating user: {ex}");
-                throw new Exception("Un utilisateur avec cet email existe déjà", ex);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error creating user: {ex}");
-                throw new Exception("Une erreur est survenue lors de la création de l'utilisateur", ex);
+                _logger.LogError($"Error creating user: {ex.Message}");
+                if (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
+                {
+                    if (ex.Message.Contains("email"))
+                    {
+                        throw new InvalidOperationException("Cet email existe déjà.");
+                    }
+                }
+                throw;
             }
         }
 
@@ -103,11 +120,24 @@ namespace TTH.Backend.Services
         {
             try
             {
-                var indexKeysDefinition = Builders<User>.IndexKeys.Ascending(user => user.Email);
-                var indexOptions = new CreateIndexOptions { Unique = true };
-                var indexModel = new CreateIndexModel<User>(indexKeysDefinition, indexOptions);
+                // Supprimer tous les index existants sauf _id
+                var indexCursor = await _users.Indexes.ListAsync();
+                var indexes = await indexCursor.ToListAsync();
+                foreach (var index in indexes)
+                {
+                    var indexName = index["name"].AsString;
+                    if (indexName != "_id_") // Ne pas supprimer l'index _id
+                    {
+                        await _users.Indexes.DropOneAsync(indexName);
+                    }
+                }
                 
-                await _users.Indexes.CreateOneAsync(indexModel);
+                // Créer uniquement l'index sur l'email
+                var emailIndexKeysDefinition = Builders<User>.IndexKeys.Ascending(user => user.Email);
+                var emailIndexOptions = new CreateIndexOptions { Unique = true };
+                var emailIndexModel = new CreateIndexModel<User>(emailIndexKeysDefinition, emailIndexOptions);
+                
+                await _users.Indexes.CreateOneAsync(emailIndexModel);
                 _logger.LogInformation("MongoDB indexes initialized successfully");
             }
             catch (MongoAuthenticationException ex)
@@ -119,6 +149,26 @@ namespace TTH.Backend.Services
                 _logger.LogError($"Error initializing MongoDB indexes: {ex}");
                 throw;
             }
+        }
+
+        public async Task<User> UpdateCoverPicture(string userId, string coverPictureUrl)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+            var update = Builders<User>.Update.Set(u => u.CoverPicture, coverPictureUrl);
+            
+            var updateResult = await _users.UpdateOneAsync(filter, update);
+            if (updateResult.ModifiedCount == 0)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            var updatedUser = await GetUserByIdAsync(userId);
+            if (updatedUser == null)
+            {
+                throw new InvalidOperationException("User not found after update");
+            }
+
+            return updatedUser;
         }
     }
 }

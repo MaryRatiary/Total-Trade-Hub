@@ -11,7 +11,6 @@ namespace TTH.Backend.Models // Ensure this namespace matches the one imported i
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
-        [BsonRequired]
         [BsonElement("username")]
         public string Username { get; set; } = string.Empty;
         
@@ -29,6 +28,14 @@ namespace TTH.Backend.Models // Ensure this namespace matches the one imported i
         
         [BsonElement("profilePicture")]
         public string ProfilePicture { get; set; } = string.Empty;
+
+        [BsonElement("coverPicture")]
+        public string CoverPicture { get; set; } = string.Empty;
+
+        [BsonIgnore]
+        public string FullProfilePictureUrl => !string.IsNullOrEmpty(ProfilePicture) ? 
+            (ProfilePicture.StartsWith("http") ? ProfilePicture : $"http://192.168.1.181:5131{ProfilePicture}") : 
+            "http://192.168.1.181:5131/default-avatar.png";
         
         [BsonElement("phone")]
         public string? Phone { get; set; }

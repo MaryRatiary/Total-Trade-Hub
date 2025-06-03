@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaHeart, FaRegHeart, FaComment, FaShare, FaBookmark, FaRegBookmark, FaEdit, FaEye, FaTrash } from 'react-icons/fa';
 import './ArticleCard.css';
 import { API_BASE_URL } from '../services/config';
-import { likeArticle, addComment, deleteComment, shareArticle } from '../services/articleService';
+import { likeArticle, addComment, deleteComment, shareArticle, incrementViews, getViews } from '../services/articleService';
 
 const ArticleCard = ({ article, onDelete, onEdit }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -11,6 +11,7 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState(0);
+  const [views, setViews] = useState(article?.views ?? 0);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -63,6 +64,20 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const loadViews = async () => {
+      try {
+        const response = await getViews(article.id);
+        setViews(response.views);
+      } catch (error) {
+        console.error('Error loading views:', error);
+      }
+    };
+    if (article?.id) {
+      loadViews();
+    }
+  }, [article?.id]);
 
   const handleLike = async () => {
     try {
@@ -139,12 +154,12 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
     }
   };
 
-  const handleView = () => {
+  const handleView = async () => {
     try {
-      alert(`Viewing article: ${articleData.title}`); // Placeholder for view functionality
-      setShowDropdown(false);
+      await incrementViews(articleData.id);
+      setViews(prev => prev + 1);
     } catch (error) {
-      console.error('Error in handleView:', error);
+      console.error('Error incrementing views:', error);
     }
   };
 
@@ -258,6 +273,11 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
       {/* Compteur de likes */}
       <div className="likes-count">
         {likes} j'aime
+      </div>
+
+      {/* Compteur de vues */}
+      <div className="views-count">
+        {views} vues
       </div>
 
       {/* Contenu de l'article */}

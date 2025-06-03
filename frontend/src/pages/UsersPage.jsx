@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import Spinner from "../components/Spinner";
 import { API_BASE_URL } from '../services/config';
 
 const UsersPage = () => {
@@ -86,7 +87,7 @@ const UsersPage = () => {
         <Navbar />
         <div className="container mx-auto px-4 py-8 mt-20">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <Spinner />
             <p className="mt-4 text-gray-600">Chargement des utilisateurs...</p>
           </div>
         </div>

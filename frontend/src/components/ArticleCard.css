@@ -123,10 +123,27 @@
   transform: scale(0.95);
 }
 
+.action-button.view-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-button.view-button svg {
+  font-size: 18px;
+}
+
 .likes-count {
   padding: 0 16px;
   font-weight: 600;
   color: #262626;
+}
+
+.views-count {
+  padding: 0 16px;
+  font-size: 14px;
+  color: #8e8e8e;
+  margin-top: 4px;
 }
 
 .article-content {

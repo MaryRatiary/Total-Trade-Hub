@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MongoDB.Driver;
 using TTH.Backend.Services;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ if (!Directory.Exists(uploadsPath))
 }
 
 // Add services to the container.
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -37,7 +39,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure MongoDB
-var mongoSettings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
+var mongoSettings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>() 
+    ?? throw new InvalidOperationException("MongoDB settings not found in configuration");
 var mongoClient = new MongoClient(mongoSettings.ConnectionString);
 var database = mongoClient.GetDatabase(mongoSettings.DatabaseName);
 
@@ -54,11 +57,7 @@ if (!articleIndexes.Any(i => i["name"] == "userId_1"))
 }
 
 var userIndexes = userCollection.Indexes.List().ToList();
-if (!userIndexes.Any(i => i["name"] == "username_1"))
-{
-    var usernameIndex = Builders<User>.IndexKeys.Ascending(u => u.Username);
-    userCollection.Indexes.CreateOne(new CreateIndexModel<User>(usernameIndex, new CreateIndexOptions { Unique = true }));
-}
+// Ne créer que l'index email unique
 if (!userIndexes.Any(i => i["name"] == "email_1"))
 {
     var emailIndex = Builders<User>.IndexKeys.Ascending(u => u.Email);
@@ -76,13 +75,11 @@ builder.Services.AddSingleton<LoginAttemptTracker>();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", corsBuilder =>
+    options.AddPolicy("AllowAll", builder =>
     {
-        corsBuilder            .SetIsOriginAllowed(origin => true) // Permettre toutes les origines en développement
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
-            .WithExposedHeaders("Token-Expired", "Authorization");
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
 });
 
@@ -141,9 +138,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
+app.UseCors("AllowAll");
+
 // Important: Correct middleware order
 app.UseRouting();
-app.UseCors("AllowFrontend"); // CORS must be configured before authentication
 app.UseAuthentication();
 app.UseAuthorization();
 

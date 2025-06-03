@@ -49,6 +49,9 @@ namespace TTH.Backend.Models
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
 
+        [BsonElement("views")]
+        public int Views { get; set; } = 0;
+
         [BsonElement("contact")]
         public string Contact { get; set; } = string.Empty;
 

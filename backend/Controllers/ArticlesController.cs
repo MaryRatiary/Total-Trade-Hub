@@ -27,8 +27,8 @@ namespace TTH.Backend.Controllers
             _environment = environment;
             _logger = logger;
             _baseUrl = environment.IsDevelopment() 
-                ? "http://192.168.88.64:5131"  // URL de développement
-                : "http://192.168.88.64:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.1.181:5131"  // URL de développement
+                : "http://192.168.1.181:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         [HttpGet("all")]
@@ -234,7 +234,7 @@ namespace TTH.Backend.Controllers
                         authorLastName = article.AuthorLastName,
                         authorUsername = article.AuthorUsername,
                         authorProfilePicture = !string.IsNullOrEmpty(article.AuthorProfilePicture)
-                            ? $"http://localhost:5131{article.AuthorProfilePicture}"
+                            ? $"http://192.168.1.181:5131{article.AuthorProfilePicture}"
                             : null
                     }
                 };
@@ -562,6 +562,42 @@ namespace TTH.Backend.Controllers
             {
                 _logger.LogError($"Error in ShareArticle: {ex}");
                 return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+
+        [HttpPost("{id}/views")]
+        public async Task<IActionResult> IncrementViews(string id)
+        {
+            try
+            {
+                _logger.LogInformation($"Incrementing views for article {id}");
+                var success = await _articleService.IncrementViewsAsync(id);
+                if (!success)
+                {
+                    return NotFound("Article not found");
+                }
+                return Ok(new { message = "Views incremented successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error incrementing views: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpGet("{id}/views")]
+        public async Task<IActionResult> GetViews(string id)
+        {
+            try
+            {
+                _logger.LogInformation($"Getting views for article {id}");
+                var views = await _articleService.GetViewsAsync(id);
+                return Ok(new { views });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error getting views: {ex.Message}");
+                return StatusCode(500, "Internal server error");
             }
         }
 

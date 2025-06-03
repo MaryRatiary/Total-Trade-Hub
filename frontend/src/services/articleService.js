@@ -41,3 +41,22 @@ export const shareArticle = async (articleId) => {
     return apiService.handleResponse(response);
   });
 };
+
+export const incrementViews = async (articleId) => {
+  return apiService.makeRequest('incrementViews', async () => {
+    const response = await fetchWithRetry(`${API_BASE_URL}/articles/${articleId}/views`, {
+      method: 'POST',
+      headers: apiService.getAuthHeaders()
+    });
+    return apiService.handleResponse(response);
+  });
+};
+
+export const getViews = async (articleId) => {
+  return apiService.makeRequest('getViews', async () => {
+    const response = await fetchWithRetry(`${API_BASE_URL}/articles/${articleId}/views`, {
+      headers: apiService.getAuthHeaders()
+    });
+    return apiService.handleResponse(response);
+  });
+};

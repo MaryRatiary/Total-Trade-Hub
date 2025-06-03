@@ -22,14 +22,16 @@ namespace TTH.Backend.Controllers
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _baseUrl = webHostEnvironment.IsDevelopment() 
-                ? "http://192.168.88.64:5131"  // URL de développement
-                : "http://192.168.88.64:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.1.181:5131"  // URL de développement
+                : "http://192.168.1.181:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         private string GetFullUrl(string? path)
         {
-            if (string.IsNullOrEmpty(path)) return null;
-            return $"{_baseUrl}{path}";
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            if (path.StartsWith("http")) return path;
+            if (path.StartsWith("https://avatars.githubusercontent.com")) return path;
+            return $"http://192.168.1.181:5131{path}";
         }
 
         [HttpGet("list")] // Changed from "all" to "list" to avoid conflict
@@ -190,9 +192,7 @@ namespace TTH.Backend.Controllers
                     Email = user.Email,
                     Phone = user.Phone ?? "",
                     Residence = user.Residence ?? "",
-                    ProfilePicture = !string.IsNullOrEmpty(user.ProfilePicture) 
-                        ? GetFullUrl(user.ProfilePicture)
-                        : null,
+                    ProfilePicture = user.FullProfilePictureUrl,
                     Articles = user.Articles.Select(a => new
                     {
                         id = a.Id,

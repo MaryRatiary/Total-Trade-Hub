@@ -3,16 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaTimes } from "react-icons/fa";
 import { useMediaQuery } from 'react-responsive';
 import { API_BASE_URL } from '../services/config';
+import Spinner from './Spinner';
 import './SearchBar.css';
 
-const SearchBar = () => {
+const SearchBar = ({ isMobile, expanded, onCollapse }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
   const navigate = useNavigate();
-  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const isMobileView = useMediaQuery({ maxWidth: 768 });
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSearch = async (query) => {
@@ -78,34 +79,32 @@ const SearchBar = () => {
   }, []);
 
   return (
-    <div className={`search-container ${isExpanded ? 'expanded' : ''}`} ref={searchRef}>
-      {isMobile && !isExpanded ? (
-        <FaSearch className="search-icon-mobile" onClick={handleSearchIconClick} />
+    <div className={`search-container ${expanded ? 'expanded' : ''}`}>
+      {isMobileView && !expanded ? (
+        <button className="search-toggle" onClick={handleSearchIconClick}>
+          <FaSearch />
+        </button>
       ) : (
         <div className="search-input-wrapper">
-          <div className="search-icon-wrapper">
-            <FaSearch className="search-icon" />
-          </div>
+          <FaSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Rechercher des contenus, publications, personnes..."
-            className="search-input"
+            placeholder="Rechercher..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setShowResults(true);
             }}
-            onFocus={() => setShowResults(true)}
+            className="search-input "
           />
-          {isMobile && (
-            <FaTimes className="close-icon" onClick={handleCloseSearch} />
+          {isMobileView && (
+            <button className="search-close" onClick={onCollapse}>
+              <FaTimes />
+            </button>
           )}
           {isLoading && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
+              <Spinner size="small" />
             </div>
           )}
         </div>

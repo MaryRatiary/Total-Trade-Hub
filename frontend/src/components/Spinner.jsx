@@ -1,15 +1,16 @@
 import React from 'react';
+import Bouncy from './Bouncy';
 
 const Spinner = ({ size = 'medium', className = '' }) => {
-  const sizeClasses = {
-    small: 'w-4 h-4',
-    medium: 'w-8 h-8',
-    large: 'w-12 h-12'
+  const sizeMap = {
+    small: '25',
+    medium: '45',
+    large: '65'
   };
 
   return (
-    <div className={`inline-block animate-spin ${sizeClasses[size]} ${className}`}>
-      <div className="border-4 border-t-blue-500 border-r-transparent border-b-blue-500 border-l-transparent rounded-full w-full h-full"></div>
+    <div className={className}>
+      <Bouncy size={sizeMap[size]} />
     </div>
   );
 };

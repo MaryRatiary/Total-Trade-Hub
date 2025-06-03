@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import logo from '/tth-removebg.png';
+import Spinner from '../components/Spinner';
 import { apiService } from '../services/api';
 
 const LoginPage = () => {
@@ -80,7 +81,7 @@ const LoginPage = () => {
             disabled={isLoading}
           />
           <button type="submit" disabled={isLoading}>
-            {isLoading ? 'Connexion...' : 'Se connecter'}
+            {isLoading ? <Spinner /> : 'Se connecter'}
           </button>
         </form>
       </div>

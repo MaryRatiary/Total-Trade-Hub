@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import LoadingOverlay from '../components/LoadingOverlay';
 import ErrorBoundary from '../components/ErrorBoundary';
 import useFormValidation from '../hooks/useFormValidation';
+import Spinner from '../components/Spinner';
 
 const RegisterContent = () => {
   const navigate = useNavigate();
@@ -151,12 +152,19 @@ const RegisterContent = () => {
           
           <div className="flex items-center justify-between">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 flex items-center justify-center"
               type="submit"
               onClick={handleRegister}
               disabled={isLoading}
             >
-              {isLoading ? 'Inscription en cours...' : 'S\'inscrire'}
+              {isLoading ? (
+                <>
+                  <Spinner size="small" className="mr-2" />
+                  Inscription en cours...
+                </>
+              ) : (
+                'S\'inscrire'
+              )}
             </button>
           </div>
         </form>

@@ -1,35 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Navbar.css';
 import logo from '/tth-removebg.png';
 import SearchBar from './SearchBar';
-import { FaHome, FaStore, FaUser, FaCog, FaBell } from 'react-icons/fa';
+import { FaHome, FaStore, FaUser, FaCog, FaBell, FaSearch } from 'react-icons/fa';
 import { useMediaQuery } from 'react-responsive';
 import { API_BASE_URL } from '../services/config';
+import axios from 'axios';
 
 const Navbar = () => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const menuRef = useRef(null);
 
-  useEffect(() => {
-    fetchNotifications();
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser?.token) return;
+    if (!currentUser?.token) {
+      console.log('No user token found, skipping notification fetch');
+      return;
+    }
 
     try {
+      console.log('Fetching notifications...');
       const friendResponse = await fetch(`${API_BASE_URL}/friendrequest/pending`, {
         headers: {
           'Authorization': `Bearer ${currentUser.token}`,
@@ -39,6 +33,8 @@ const Navbar = () => {
 
       if (friendResponse.ok) {
         const friendRequests = await friendResponse.json();
+        console.log('Received friend requests:', friendRequests);
+        
         const notifications = friendRequests.map(req => ({
           id: req.requestId,
           type: 'friend_request',
@@ -51,11 +47,33 @@ const Navbar = () => {
 
         setNotifications(notifications);
         setUnreadCount(notifications.length);
+      } else {
+        console.error('Failed to fetch notifications:', friendResponse.status);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    console.log('Setting up notification refresh interval');
+    fetchNotifications();
+    const refreshInterval = setInterval(fetchNotifications, 30000); // Refresh every 30 seconds
+
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      clearInterval(refreshInterval);
+    };
+  }, [fetchNotifications]); // Empty dependency array since we want this to run once on mount
 
   const handleNotificationAction = async (notificationId, action) => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -82,6 +100,12 @@ const Navbar = () => {
 
   const handleLinkClick = () => {
     setShowNotifications(false);
+    setSearchExpanded(false);
+  };
+
+  const handleSearchToggle = () => {
+    setSearchExpanded(!searchExpanded);
+    setShowNotifications(false);
   };
 
   return (
@@ -102,18 +126,34 @@ const Navbar = () => {
               <span>E-Jery</span>
             </a>
           </li>
-          <li className="search-container">
-            <SearchBar className="recherche" />
+          
+          <li className={`search-container ${searchExpanded ? 'expanded' : ''}`}>
+            {isMobile ? (
+              <button 
+                onClick={handleSearchToggle}
+                className="search-toggle-button"
+              >
+                <FaSearch size={20} />
+              </button>
+            ) : (
+              <SearchBar 
+                isMobile={isMobile} 
+                expanded={searchExpanded}
+                onCollapse={() => setSearchExpanded(false)}
+              />
+            )}
           </li>
+
           <li className="notification-container">
             <button 
-              className="notification-button" 
+              className="notification-button"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowNotifications(!showNotifications);
+                setSearchExpanded(false);
               }}
             >
-              <FaBell size={isMobile ? 24 : 20} />
+              <FaBell size={isMobile ? 20 : 18} />
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
             </button>
             {showNotifications && (
@@ -155,16 +195,18 @@ const Navbar = () => {
               </div>
             )}
           </li>
+
           <li>
             <a href="/profile" onClick={handleLinkClick}>
               <FaUser size={isMobile ? 24 : 20} />
-              <span>Mon Profile</span>
+              <span>Profil</span>
             </a>
           </li>
+          
           <li>
             <a href="/settings" onClick={handleLinkClick}>
               <FaCog size={isMobile ? 24 : 20} />
-              <span>Settings</span>
+              <span>Paramètres</span>
             </a>
           </li>
         </ul>
