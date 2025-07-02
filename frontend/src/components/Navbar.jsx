@@ -110,7 +110,7 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand" ref={menuRef}>
+      <div className="navbar-brand">
         <img src={logo} alt="TotalTradeHub Logo" className="navbar-logo" />
         
         <ul className="navbar-links">
@@ -144,7 +144,7 @@ const Navbar = () => {
             )}
           </li>
 
-          <li className="notification-container" ref={menuRef}>
+          <li className="notification-container">
             <button 
               className="notification-button"
               onClick={(e) => {
@@ -156,50 +156,6 @@ const Navbar = () => {
               <FaBell size={isMobile ? 20 : 18} />
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
             </button>
-            {showNotifications && (
-              <div
-                className="notifications-dropdown"
-                // Ajoute tabIndex pour focus, et stopPropagation pour éviter la fermeture immédiate
-                tabIndex={0}
-                onClick={e => e.stopPropagation()}
-                onBlur={() => setShowNotifications(false)}
-              >
-                <div className="notifications-header">
-                  <h3>Notifications</h3>
-                </div>
-                <div className="notifications-list">
-                  {notifications.length > 0 ? (
-                    notifications.map(notification => (
-                      <div 
-                        key={notification.id} 
-                        className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                      >
-                        <p className="notification-message">{notification.message}</p>
-                        <span className="notification-time">{notification.time}</span>
-                        {notification.type === 'friend_request' && (
-                          <div className="notification-actions">
-                            <button 
-                              onClick={() => handleNotificationAction(notification.id, 'accept')}
-                              className="accept-button"
-                            >
-                              Accepter
-                            </button>
-                            <button 
-                              onClick={() => handleNotificationAction(notification.id, 'reject')}
-                              className="reject-button"
-                            >
-                              Refuser
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="no-notifications">Aucune notification</p>
-                  )}
-                </div>
-              </div>
-            )}
           </li>
 
           <li>
@@ -216,6 +172,51 @@ const Navbar = () => {
             </a>
           </li>
         </ul>
+        {/* Place notifications-dropdown OUTSIDE of navbar-links to avoid overflow:hidden issues */}
+        {showNotifications && (
+          <div
+            className="notifications-dropdown"
+            tabIndex={0}
+            onClick={e => e.stopPropagation()}
+            onBlur={() => setShowNotifications(false)}
+            ref={menuRef}
+          >
+            <div className="notifications-header">
+              <h3>Notifications</h3>
+            </div>
+            <div className="notifications-list">
+              {notifications.length > 0 ? (
+                notifications.map(notification => (
+                  <div 
+                    key={notification.id} 
+                    className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                  >
+                    <p className="notification-message">{notification.message}</p>
+                    <span className="notification-time">{notification.time}</span>
+                    {notification.type === 'friend_request' && (
+                      <div className="notification-actions">
+                        <button 
+                          onClick={() => handleNotificationAction(notification.id, 'accept')}
+                          className="accept-button"
+                        >
+                          Accepter
+                        </button>
+                        <button 
+                          onClick={() => handleNotificationAction(notification.id, 'reject')}
+                          className="reject-button"
+                        >
+                          Refuser
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="no-notifications">Aucune notification</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
