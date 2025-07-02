@@ -144,12 +144,12 @@ const Navbar = () => {
             )}
           </li>
 
-          <li className="notification-container">
+          <li className="notification-container" ref={menuRef}>
             <button 
               className="notification-button"
               onClick={(e) => {
                 e.stopPropagation();
-                setShowNotifications(!showNotifications);
+                setShowNotifications((prev) => !prev);
                 setSearchExpanded(false);
               }}
             >
@@ -157,7 +157,13 @@ const Navbar = () => {
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
             </button>
             {showNotifications && (
-              <div className="notifications-dropdown" onClick={e => e.stopPropagation()}>
+              <div
+                className="notifications-dropdown"
+                // Ajoute tabIndex pour focus, et stopPropagation pour éviter la fermeture immédiate
+                tabIndex={0}
+                onClick={e => e.stopPropagation()}
+                onBlur={() => setShowNotifications(false)}
+              >
                 <div className="notifications-header">
                   <h3>Notifications</h3>
                 </div>

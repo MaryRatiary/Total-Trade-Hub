@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.IO;
+using System.Security.Claims;
 
 namespace TTH.Backend.Controllers
 {
@@ -22,6 +23,12 @@ namespace TTH.Backend.Controllers
         {
             _userService = userService;
             _logger = logger;
+        }
+
+        private string GetFullUrl(string relativePath)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            return $"{baseUrl}{relativePath}";
         }
 
         [HttpGet]
@@ -58,11 +65,12 @@ namespace TTH.Backend.Controllers
         }
 
         [HttpPost("cover-picture")]
-        public async Task<IActionResult> UploadCoverPicture(IFormFile image)
+        [Authorize]
+        public async Task<IActionResult> UploadCoverPicture([FromForm] IFormFile image)
         {
             try
             {
-                var userId = User.FindFirst("id")?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();
@@ -87,10 +95,16 @@ namespace TTH.Backend.Controllers
                     await image.CopyToAsync(fileStream);
                 }
 
-                var coverPictureUrl = $"/covers/{uniqueFileName}";
-                await _userService.UpdateCoverPicture(userId, coverPictureUrl);
-
-                return Ok(new { coverPictureUrl });
+                var relativePath = $"/covers/{uniqueFileName}";
+                await _userService.UpdateCoverPicture(userId, relativePath);
+                
+                var fullUrl = GetFullUrl(relativePath);
+                _logger.LogInformation($"Cover picture URL: {fullUrl}");
+                
+                return Ok(new { 
+                    coverPictureUrl = fullUrl,
+                    message = "Cover picture updated successfully"
+                });
             }
             catch (Exception ex)
             {

@@ -32,9 +32,20 @@ const ArticleCard = ({ article, onDelete, onEdit }) => {
     createdAt: article?.createdAt ? new Date(article.createdAt) : new Date()
   };
 
-  const displayName = articleData.authorFirstName && articleData.authorLastName
-    ? `${articleData.authorFirstName} ${articleData.authorLastName}`
-    : articleData.authorUsername || 'Utilisateur inconnu';
+  // Correction stricte de l'affichage du nom de l'auteur
+  let displayName = "Utilisateur inconnu";
+  const hasFirstName = typeof articleData.authorFirstName === "string" && articleData.authorFirstName.trim().length > 0;
+  const hasLastName = typeof articleData.authorLastName === "string" && articleData.authorLastName.trim().length > 0;
+  const hasUsername = typeof articleData.authorUsername === "string" && articleData.authorUsername.trim().length > 0;
+  if (hasFirstName && hasLastName) {
+    displayName = `${articleData.authorFirstName.trim()} ${articleData.authorLastName.trim()}`;
+  } else if (hasFirstName) {
+    displayName = articleData.authorFirstName.trim();
+  } else if (hasLastName) {
+    displayName = articleData.authorLastName.trim();
+  } else if (hasUsername) {
+    displayName = articleData.authorUsername.trim();
+  }
 
   console.log('Rendering article:', { id: articleData.id, title: articleData.title, authorFirstName: articleData.authorFirstName, authorLastName: articleData.authorLastName });
 

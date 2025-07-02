@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../services/config';
 
-import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
+import LeftSidebar from '../components/LeftSidebar';
+import RightSidebar from '../components/RightSidebar';
 import PublishForm from '../components/PublishForm';
 import ArticleCard from '../components/ArticleCard';
 import UserHorizontalScroll from '../components/UserHorizontalScroll';
@@ -258,41 +259,58 @@ const WelcomePage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-
-      <div className="container mx-auto px-4 py-8">
-        <PublishForm onPublish={handlePublish} />
-        
-        <div className="mb-6">
-          <UserHorizontalScroll users={users} />
+      
+      <div className="flex flex-row justify-center items-start w-full max-w-full">
+        {/* Sidebar gauche */}
+        <div className="hidden lg:block flex-shrink-0" style={{ width: 256 /* w-64 */ }}>
+          <LeftSidebar />
         </div>
-
-        <div className="admin-controls">
-          <button 
-            onClick={deleteAllArticles}
-            className="delete-all-button bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded mb-4"
-          >
-            Supprimer toutes les publications
-          </button>
-        </div>
-
-        <Sidebar />
         
-        <section className="articles">
-          <h2 className="text-2xl font-bold mb-4">Fil d'actualité</h2>
-          <div className="articles-grid">
-            {allArticles && allArticles.length > 0 ? (
-              allArticles.map((article, index) => (
-                <ArticleCard 
-                  key={`${article.id || ''}-${index}`} 
-                  article={article}
-                  isFriendPost={article.userId !== JSON.parse(localStorage.getItem('currentUser'))?.id}
-                />
-              ))
-            ) : (
-              <p className="no-articles">Aucune publication disponible</p>
-            )}
+        {/* Contenu principal */}
+        <main className="flex-1 px-2 lg:px-6 max-w-2xl lg:max-w-3xl mx-auto" style={{ minWidth: 0 }}>
+          <div>
+            <PublishForm onPublish={handlePublish} />
+            
+            <div className="mb-6 lg:hidden">
+              <UserHorizontalScroll users={users} />
+            </div>
+
+            <div className="admin-controls mb-4">
+              <button 
+                onClick={deleteAllArticles}
+                className="delete-all-button bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded"
+              >
+                Supprimer toutes les publications
+              </button>
+            </div>
+            
+            <section className="articles">
+              <h2 className="text-2xl font-bold mb-4">Fil d'actualité</h2>
+              <div className="articles-grid">
+                {allArticles && allArticles.length > 0 ? (
+                  allArticles.map((article, index) => (
+                    <ArticleCard 
+                      key={`${article.id || ''}-${index}`} 
+                      article={article}
+                      isFriendPost={article.userId !== JSON.parse(localStorage.getItem('currentUser'))?.id}
+                    />
+                  ))
+                ) : (
+                  <p className="no-articles">Aucune publication disponible</p>
+                )}
+              </div>
+            </section>
           </div>
-        </section>
+        </main>
+        
+        {/* Sidebar droite */}
+        <div className="hidden lg:block flex-shrink-0" style={{ width: 288 /* w-72 */ }}>
+          <RightSidebar 
+            contacts={users}
+            birthdays={[]} // À implémenter si nécessaire
+            suggestions={users?.filter(u => u.id !== JSON.parse(localStorage.getItem('currentUser'))?.id).slice(0, 5)}
+          />
+        </div>
       </div>
     </div>
   );

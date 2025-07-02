@@ -1,3 +1,46 @@
-.baky{
-    background-color: #1f2937;
+.baky {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+}
+
+.register-bg {
+    background: linear-gradient(120deg, #c1c2c4 0%, #858587 100%);
+}
+
+.register-card {
+    box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.15), 0 1.5px 4px 0 rgba(99, 102, 241, 0.08);
+    border-radius: 1.25rem;
+    border: 1px solid #e5e7eb;
+}
+
+input:focus, select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px #2563eb33;
+    outline: none;
+}
+
+input, select {
+    transition: border 0.2s, box-shadow 0.2s;
+    background-color: #f9fafb;
+}
+
+label {
+    font-weight: 600;
+    color: #374151;
+}
+
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.delete-all-button {
+    margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+    .register-card {
+        padding: 1.5rem;
+        border-radius: 1rem;
+    }
 }

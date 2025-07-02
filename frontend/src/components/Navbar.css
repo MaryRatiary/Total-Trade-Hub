@@ -185,11 +185,11 @@
   100% { transform: scale(1); }
 }
 
-Menu déroulant des notifications
+/* Correction : notifications-dropdown doit sortir du navbar */
 .notifications-dropdown {
-  position: absolute;
-
-  right: 0;
+  position: fixed; /* Utilise fixed pour sortir du flux du navbar */
+  top: 80px; /* Décale sous le navbar (ajuste si besoin) */
+  right: 40px; /* Décale du bord droit (ajuste si besoin) */
   width: 380px;
   background: rgba(30, 30, 60, 0.95);
   border-radius: 20px;
@@ -200,77 +200,13 @@ Menu déroulant des notifications
     0 0 20px rgba(109, 74, 255, 0.2);
   animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
-  z-index: 1000;
+  z-index: 2000; /* Plus haut que le navbar */
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.notification-item {
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  overflow: hidden;
-  margin: 8px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.notification-item:hover {
-  background: rgba(109, 74, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.notification-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 3px;
-  background: linear-gradient(to bottom, #6d4aff, #ff4a6d);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.notification-item.unread::before {
-  opacity: 1;
-}
-
-/* Boutons avec effet néon */
-.accept-button, .reject-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.accept-button {
-  background: linear-gradient(135deg, #38A169, #2F855A);
-  color: white;
-}
-
-.accept-button:hover {
-  box-shadow: 0 0 15px rgba(56, 161, 105, 0.6);
-  transform: translateY(-2px);
-}
-
-.reject-button {
-  background: linear-gradient(135deg, #E53E3E, #C53030);
-  color: white;
-}
-
-.reject-button:hover {
-  box-shadow: 0 0 15px rgba(229, 62, 62, 0.6);
-  transform: translateY(-2px);
-}  /* Style pour mobile */
-/* Responsive styles for mobile devices */
+/* Responsive pour mobile */
 @media (max-width: 768px) {
   .navbar {
     width: 100%;
@@ -310,7 +246,7 @@ Menu déroulant des notifications
     backdrop-filter: blur(10px);
   }
 
-  .navbar .search-container {
+ .search-container {
     position: relative;
     width: 100%;
     max-width: 200px;
@@ -321,6 +257,15 @@ Menu déroulant des notifications
 
   .navbar-links a span {
     display: none;
+  }
+
+  .notifications-dropdown {
+    right: 10px;
+    left: 10px;
+    width: auto;
+    min-width: 0;
+    max-width: 98vw;
+    top: 70px;
   }
 }
 

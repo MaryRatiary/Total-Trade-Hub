@@ -75,11 +75,12 @@ builder.Services.AddSingleton<LoginAttemptTracker>();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowFrontend", builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.WithOrigins("http://192.168.43.100:5173") // Remplace par le port réel du frontend si différent
                .AllowAnyMethod()
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials();
     });
 });
 
@@ -123,12 +124,12 @@ using (var scope = app.Services.CreateScope())
 
 // Configure Kestrel for all network interfaces
 app.Urls.Clear();
-app.Urls.Add("http://0.0.0.0:5131");
+app.Urls.Add("http://192.168.43.100:5131"); // <-- Utilise l'IP locale
 
 // Only use HTTPS in production
 if (!app.Environment.IsDevelopment())
 {
-    app.Urls.Add("https://0.0.0.0:5132");
+    app.Urls.Add("https://192.168.43.100:5132"); // <-- Utilise l'IP locale
 }
 
 // Configure middleware pipeline
@@ -139,7 +140,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend"); // <-- Utilise la nouvelle policy
 
 // Important: Correct middleware order
 app.UseRouting();

@@ -128,18 +128,18 @@ const RegisterContent = () => {
   ];
 
   return (
-    <div className="baky flex items-center justify-center min-h-screen bg-#1f2937">
+    <div className="baky flex items-center justify-center min-h-screen register-bg">
       {isLoading && <LoadingOverlay message="Création de votre compte..." />}
       
       <Link
-        className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        className="absolute top-4 right-4 bg-gradient-to-l from-lime-200 to-lime-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline shadow-lg"
         to="/"
       >
         Se connecter
       </Link>
       
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">S'inscrire</h2>
+      <div className="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 register-card">
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-neutral-600 tracking-tight">Créer un compte</h2>
         <form onSubmit={e => e.preventDefault()}>
           {renderField('firstName', 'Prénom')}
           {renderField('lastName', 'Nom')}
@@ -150,9 +150,9 @@ const RegisterContent = () => {
           {renderField('password', 'Mot de passe', 'password')}
           {renderField('confirmPassword', 'Confirmer le mot de passe', 'password')}
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center mt-6">
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 flex items-center justify-center"
+              className="bg-gradient-to-l from-sky-200 to-lime-500 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-200 w-full flex items-center justify-center shadow-md"
               type="submit"
               onClick={handleRegister}
               disabled={isLoading}

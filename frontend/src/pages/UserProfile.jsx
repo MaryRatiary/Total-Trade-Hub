@@ -62,6 +62,7 @@ const UserProfile = () => {
         Phone: data.phone || data.Phone,
         Residence: data.residence || data.Residence,
         ProfilePicture: data.profilePicture || data.ProfilePicture,
+        CoverPicture: data.coverPicture || data.CoverPicture,
         Articles: data.articles || data.Articles || []
       });
 
@@ -141,33 +142,55 @@ const UserProfile = () => {
     const file = event.target.files[0];
     if (file) {
       const formData = new FormData();
-      formData.append('image', file, file.name);
+      formData.append('image', file);
 
       try {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        const response = await fetch(`${API_BASE_URL}/users/cover-picture`, {
+        if (!currentUser?.token) {
+          throw new Error('Non authentifié');
+        }
+
+        console.log('Uploading cover picture...');
+        const response = await fetch(`${API_BASE_URL}/user/cover-picture`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${currentUser.token}`
+            'Authorization': `Bearer ${currentUser.token}`,
+            'Accept': 'application/json'
           },
           body: formData
         });
 
         if (!response.ok) {
-          throw new Error('Failed to upload cover picture');
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Server response:', errorData);
+          throw new Error(errorData.message || 'Failed to upload cover picture');
         }
 
         const result = await response.json();
+        console.log('Server response:', result);
+        
         if (result.coverPictureUrl) {
+          // Mettre à jour l'état avec la nouvelle URL
+          const newUrl = result.coverPictureUrl;
+          console.log('Updating cover picture URL to:', newUrl);
+          
           setUser(prev => ({
             ...prev,
-            CoverPicture: result.coverPictureUrl
+            CoverPicture: newUrl
           }));
+
+          // Force le rechargement de l'image
+          const coverImg = document.querySelector('.profile-cover img');
+          if (coverImg) {
+            coverImg.src = newUrl + '?t=' + new Date().getTime();
+          }
+          
           event.target.value = '';
+          console.log('Cover picture updated successfully:', result.message);
         }
       } catch (error) {
         console.error('Error uploading cover picture:', error);
-        alert(error.message);
+        alert('Erreur lors du téléchargement de la photo de couverture : ' + error.message);
       }
     }
   };
@@ -343,7 +366,7 @@ const UserProfile = () => {
             {/* Cover Photo */}
             <div className="profile-cover">
               <img
-                src={user.CoverPicture || '/defaults/default-cover.jpg'}
+                src={user.CoverPicture}
                 alt="Cover"
                 className="w-full h-full object-cover"
               />
