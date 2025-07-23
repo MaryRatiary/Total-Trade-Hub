@@ -112,112 +112,107 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-brand">
         <img src={logo} alt="TotalTradeHub Logo" className="navbar-logo" />
-        
-        <ul className="navbar-links">
-          <li>
-            <a href="/WelcomePage" onClick={handleLinkClick}>
-              <FaHome size={isMobile ? 24 : 20} />
-              <span>Accueil</span>
-            </a>
-          </li>
-          <li>
-            <a href="/ejery" onClick={handleLinkClick}>
-              <FaStore size={isMobile ? 24 : 20} />
-              <span>E-Jery</span>
-            </a>
-          </li>
-          
-          <li className={`search-container ${searchExpanded ? 'expanded' : ''}`}>
-            {isMobile ? (
-              <button 
-                onClick={handleSearchToggle}
-                className="search-toggle-button"
-              >
-                <FaSearch size={20} />
-              </button>
-            ) : (
-              <SearchBar 
-                isMobile={isMobile} 
-                expanded={searchExpanded}
-                onCollapse={() => setSearchExpanded(false)}
-              />
-            )}
-          </li>
-
-          <li className="notification-container">
-            <button 
-              className="notification-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowNotifications((prev) => !prev);
-                setSearchExpanded(false);
-              }}
-            >
-              <FaBell size={isMobile ? 20 : 18} />
-              {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-            </button>
-          </li>
-
-          <li>
-            <a href="/profile" onClick={handleLinkClick}>
-              <FaUser size={isMobile ? 24 : 20} />
-              <span>Profil</span>
-            </a>
-          </li>
-          
-          <li>
-            <a href="/settings" onClick={handleLinkClick}>
-              <FaCog size={isMobile ? 24 : 20} />
-              <span>Paramètres</span>
-            </a>
-          </li>
-        </ul>
-        {/* Place notifications-dropdown OUTSIDE of navbar-links to avoid overflow:hidden issues */}
-        {showNotifications && (
-          <div
-            className="notifications-dropdown"
-            tabIndex={0}
-            onClick={e => e.stopPropagation()}
-            onBlur={() => setShowNotifications(false)}
-            ref={menuRef}
-          >
-            <div className="notifications-header">
-              <h3>Notifications</h3>
-            </div>
-            <div className="notifications-list">
-              {notifications.length > 0 ? (
-                notifications.map(notification => (
-                  <div 
-                    key={notification.id} 
-                    className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                  >
-                    <p className="notification-message">{notification.message}</p>
-                    <span className="notification-time">{notification.time}</span>
-                    {notification.type === 'friend_request' && (
-                      <div className="notification-actions">
-                        <button 
-                          onClick={() => handleNotificationAction(notification.id, 'accept')}
-                          className="accept-button"
-                        >
-                          Accepter
-                        </button>
-                        <button 
-                          onClick={() => handleNotificationAction(notification.id, 'reject')}
-                          className="reject-button"
-                        >
-                          Refuser
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="no-notifications">Aucune notification</p>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+      <ul className="navbar-links">
+        <li>
+          <a href="/WelcomePage" onClick={handleLinkClick}>
+            <FaHome size={isMobile ? 24 : 20} />
+            <span>Accueil</span>
+          </a>
+        </li>
+        <li>
+          <a href="/ejery" onClick={handleLinkClick}>
+            <FaStore size={isMobile ? 24 : 20} />
+            <span>E-Jery</span>
+          </a>
+        </li>
+        <li className={`search-container ${searchExpanded ? 'expanded' : ''}`}>
+          {isMobile ? (
+            <button 
+              onClick={handleSearchToggle}
+              className="search-toggle-button"
+            >
+              <FaSearch size={20} />
+            </button>
+          ) : (
+            <SearchBar 
+              isMobile={isMobile} 
+              expanded={searchExpanded}
+              onCollapse={() => setSearchExpanded(false)}
+            />
+          )}
+        </li>
+        <li className="notification-container">
+          <button 
+            className="notification-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowNotifications((prev) => !prev);
+              setSearchExpanded(false);
+            }}
+          >
+            <FaBell size={isMobile ? 20 : 18} />
+            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+          </button>
+        </li>
+        <li>
+          <a href="/profile" onClick={handleLinkClick}>
+            <FaUser size={isMobile ? 24 : 20} />
+            <span>Profil</span>
+          </a>
+        </li>
+        <li>
+          <a href="/settings" onClick={handleLinkClick}>
+            <FaCog size={isMobile ? 24 : 20} />
+            <span>Paramètres</span>
+          </a>
+        </li>
+      </ul>
+      {/* Place notifications-dropdown OUTSIDE of navbar-links and navbar-brand for visibility */}
+      {showNotifications && (
+        <div
+          className="notifications-dropdown"
+          tabIndex={0}
+          onClick={e => e.stopPropagation()}
+          onBlur={() => setShowNotifications(false)}
+          ref={menuRef}
+        >
+          <div className="notifications-header">
+            <h3>Notifications</h3>
+          </div>
+          <div className="notifications-list">
+            {notifications.length > 0 ? (
+              notifications.map(notification => (
+                <div 
+                  key={notification.id} 
+                  className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                >
+                  <p className="notification-message">{notification.message}</p>
+                  <span className="notification-time">{notification.time}</span>
+                  {notification.type === 'friend_request' && (
+                    <div className="notification-actions">
+                      <button 
+                        onClick={() => handleNotificationAction(notification.id, 'accept')}
+                        className="accept-button"
+                      >
+                        Accepter
+                      </button>
+                      <button 
+                        onClick={() => handleNotificationAction(notification.id, 'reject')}
+                        className="reject-button"
+                      >
+                        Refuser
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="no-notifications">Aucune notification</p>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

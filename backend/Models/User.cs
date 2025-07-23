@@ -34,13 +34,13 @@ namespace TTH.Backend.Models // Ensure this namespace matches the one imported i
 
         [BsonIgnore]
         public string FullProfilePictureUrl => !string.IsNullOrEmpty(ProfilePicture) ? 
-            (ProfilePicture.StartsWith("http") ? ProfilePicture : $"http://192.168.43.100:5131{ProfilePicture}") : 
-            "http://192.168.43.100:5131/default-avatar.png";
+            (ProfilePicture.StartsWith("http") ? ProfilePicture : $"http://192.168.88.160:5131{ProfilePicture}") : 
+            "http://192.168.88.160:5131/default-avatar.png";
         
         [BsonIgnore]
         public string FullCoverPictureUrl => !string.IsNullOrEmpty(CoverPicture) ? 
-            (CoverPicture.StartsWith("http") ? CoverPicture : $"http://192.168.43.100:5131{CoverPicture}") : 
-            "http://192.168.43.100:5131/defaults/default-cover.jpg";
+            (CoverPicture.StartsWith("http") ? CoverPicture : $"http://192.168.88.160:5131{CoverPicture}") : 
+            "http://192.168.88.160:5131/defaults/default-cover.jpg";
         
         [BsonElement("phone")]
         public string? Phone { get; set; }
@@ -71,6 +71,9 @@ namespace TTH.Backend.Models // Ensure this namespace matches the one imported i
 
         [BsonElement("friends")]
         public List<string> Friends { get; set; } = new List<string>();
+
+        [BsonElement("bio")]
+        public string? Bio { get; set; }
 
         // Notification Settings
         [BsonElement("pushNotificationsEnabled")]

@@ -38,6 +38,57 @@ namespace TTH.Backend.Controllers
             return Ok(users);
         }
 
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto profileDto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { message = "Utilisateur non authentifié" });
+                }
+
+                var user = await _userService.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = "Utilisateur non trouvé" });
+                }
+
+                // Mise à jour des informations
+                user.FirstName = profileDto.FirstName.Trim();
+                user.LastName = profileDto.LastName.Trim();
+                user.Phone = profileDto.Phone?.Trim();
+                user.Residence = profileDto.Residence?.Trim();
+                user.Birthdate = profileDto.Birthdate ?? user.Birthdate;
+
+                await _userService.UpdateAsync(userId, user);
+
+                return Ok(new
+                {
+                    message = "Profil mis à jour avec succès",
+                    user = new
+                    {
+                        id = user.Id,
+                        username = user.Username,
+                        email = user.Email,
+                        firstName = user.FirstName,
+                        lastName = user.LastName,
+                        phone = user.Phone,
+                        birthdate = user.Birthdate,
+                        residence = user.Residence,
+                        profilePicture = user.ProfilePicture
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erreur lors de la mise à jour du profil : {ex.Message}");
+                return StatusCode(500, new { message = "Une erreur est survenue lors de la mise à jour du profil" });
+            }
+        }
+
         [HttpPost("send-message")]
         public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
         {

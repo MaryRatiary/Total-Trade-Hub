@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Register.css';
 import { apiService } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import LoadingOverlay from '../components/LoadingOverlay';
@@ -26,20 +25,20 @@ const RegisterContent = () => {
   const validationRules = {
     firstName: { required: true, minLength: 2 },
     lastName: { required: true, minLength: 2 },
-    email: { 
-      required: true, 
+    email: {
+      required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      message: 'Format d\'email invalide'
+      message: "Format d'email invalide"
     },
     phone: { required: true },
     birthdate: { required: true },
     residence: { required: true },
-    password: { 
-      required: true, 
+    password: {
+      required: true,
       minLength: 6,
       message: 'Le mot de passe doit contenir au moins 6 caractères'
     },
-    confirmPassword: { 
+    confirmPassword: {
       required: true,
       match: 'password',
       message: 'Les mots de passe ne correspondent pas'
@@ -58,11 +57,13 @@ const RegisterContent = () => {
   };
 
   const handleRegister = async () => {
+    if (!validate(formData)) {
+      showToast('Veuillez corriger les erreurs dans le formulaire', 'error');
+      return;
+    }
+
     try {
-      if (!validate(formData)) {
-        showToast('Veuillez corriger les erreurs dans le formulaire', 'error');
-        return;
-      }
+      setIsLoading(true);
 
       const userData = {
         firstName: formData.firstName,
@@ -78,43 +79,44 @@ const RegisterContent = () => {
       showToast('Compte créé avec succès!', 'success');
       localStorage.setItem('userEmail', userData.email);
       navigate('/face-recognition');
-      
     } catch (error) {
       showToast(error.message || 'Erreur lors de l\'inscription', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const renderField = (id, label, type = 'text', options = null) => (
     <div className="mb-4">
-      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={id}>
+      <label htmlFor={id} className="block text-white text-sm font-medium mb-2">
         {label}
       </label>
       {options ? (
         <select
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id={id}
           value={formData[id]}
           onChange={handleChange}
+          className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500"
         >
           <option value="">Sélectionnez un lieu</option>
           {options.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value} className="text-black">
+              {opt.label}
+            </option>
           ))}
         </select>
       ) : (
         <input
-          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${
-            errors[id] ? 'border-red-500' : ''
-          }`}
           id={id}
           type={type}
           value={formData[id]}
           onChange={handleChange}
+          className={`w-full px-4 py-2 rounded-lg bg-white/10 border ${
+            errors[id] ? 'border-red-500' : 'border-white/30'
+          } text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-cyan-500`}
         />
       )}
-      {errors[id] && (
-        <p className="text-red-500 text-xs italic">{errors[id]}</p>
-      )}
+      {errors[id] && <p className="text-red-400 text-xs mt-1">{errors[id]}</p>}
     </div>
   );
 
@@ -128,18 +130,18 @@ const RegisterContent = () => {
   ];
 
   return (
-    <div className="baky flex items-center justify-center min-h-screen register-bg">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center px-4 relative">
       {isLoading && <LoadingOverlay message="Création de votre compte..." />}
-      
+
       <Link
-        className="absolute top-4 right-4 bg-gradient-to-l from-lime-200 to-lime-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline shadow-lg"
         to="/"
+        className="absolute top-6 right-6 bg-gradient-to-r from-cyan-500 to-blue-700 hover:from-blue-700 hover:to-cyan-500 text-white font-semibold py-2 px-5 rounded-full shadow-lg transition"
       >
         Se connecter
       </Link>
-      
-      <div className="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 register-card">
-        <h2 className="text-3xl font-extrabold mb-8 text-center text-neutral-600 tracking-tight">Créer un compte</h2>
+
+      <div className="w-full max-w-lg bg-white/10 backdrop-blur-lg rounded-3xl p-8 sm:p-10 border border-white/20 shadow-2xl">
+        <h2 className="text-3xl font-bold text-white text-center mb-6">Créer un compte</h2>
         <form onSubmit={e => e.preventDefault()}>
           {renderField('firstName', 'Prénom')}
           {renderField('lastName', 'Nom')}
@@ -149,36 +151,36 @@ const RegisterContent = () => {
           {renderField('residence', 'Résidence', 'select', residenceOptions)}
           {renderField('password', 'Mot de passe', 'password')}
           {renderField('confirmPassword', 'Confirmer le mot de passe', 'password')}
-          
-          <div className="flex items-center justify-center mt-6">
-            <button
-              className="bg-gradient-to-l from-sky-200 to-lime-500 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-200 w-full flex items-center justify-center shadow-md"
-              type="submit"
-              onClick={handleRegister}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Spinner size="small" className="mr-2" />
-                  Inscription en cours...
-                </>
-              ) : (
-                'S\'inscrire'
-              )}
-            </button>
-          </div>
+
+          <button
+            onClick={handleRegister}
+            disabled={isLoading}
+            className="w-full mt-6 py-3 rounded-full bg-gradient-to-r from-cyan-500 to-blue-700 hover:from-blue-700 hover:to-cyan-500 text-white font-semibold transition-all duration-300 flex justify-center items-center disabled:opacity-50"
+          >
+            {isLoading ? (
+              <>
+                <Spinner size="small" className="mr-2" />
+                Inscription en cours...
+              </>
+            ) : (
+              "S'inscrire"
+            )}
+          </button>
         </form>
+
+        <p className="text-center text-sm text-gray-300 mt-6">
+          Vous avez déjà un compte ?{' '}
+          <Link to="/" className="text-cyan-400 hover:underline">Se connecter</Link>
+        </p>
       </div>
     </div>
   );
 };
 
-const Register = () => {
-  return (
-    <ErrorBoundary>
-      <RegisterContent />
-    </ErrorBoundary>
-  );
-};
+const Register = () => (
+  <ErrorBoundary>
+    <RegisterContent />
+  </ErrorBoundary>
+);
 
 export default Register;

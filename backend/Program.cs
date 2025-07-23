@@ -24,6 +24,19 @@ if (!Directory.Exists(uploadsPath))
     Directory.CreateDirectory(uploadsPath);
 }
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:5173") // URL du frontend
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
+});
+
 // Add services to the container.
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddControllers()
@@ -75,12 +88,15 @@ builder.Services.AddSingleton<LoginAttemptTracker>();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", builder =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        builder.WithOrigins("http://192.168.43.100:5173") // Remplace par le port réel du frontend si différent
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "http://192.168.88.160:5173"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
     });
 });
 
@@ -124,12 +140,12 @@ using (var scope = app.Services.CreateScope())
 
 // Configure Kestrel for all network interfaces
 app.Urls.Clear();
-app.Urls.Add("http://192.168.43.100:5131"); // <-- Utilise l'IP locale
+app.Urls.Add("http://192.168.88.160:5131"); // <-- Utilise l'IP locale
 
 // Only use HTTPS in production
 if (!app.Environment.IsDevelopment())
 {
-    app.Urls.Add("https://192.168.43.100:5132"); // <-- Utilise l'IP locale
+    app.Urls.Add("https://192.168.88.160:5132"); // <-- Utilise l'IP locale
 }
 
 // Configure middleware pipeline
@@ -144,6 +160,7 @@ app.UseCors("AllowFrontend"); // <-- Utilise la nouvelle policy
 
 // Important: Correct middleware order
 app.UseRouting();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 

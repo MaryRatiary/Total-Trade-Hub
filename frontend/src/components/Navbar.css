@@ -1,75 +1,61 @@
-/* Style de base avec effet glass morphism et néon */
-.navbar {
-  display: flex;
-  flex-direction: column;
-  background: rgba(20, 20, 40, 0.7);
+/* Notifications Dropdown */
+.notifications-dropdown {
   position: fixed;
-  width: 95%;
-  height: 70px;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 15px rgba(109, 74, 255, 0.2),
-    0 0 10px rgba(109, 74, 255, 0.1);
-  padding: 0 25px;
-  justify-content: center;
-  z-index: 1000;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 15px;
-  margin: 0 auto;
-  justify-content: space-between;
-  align-items: center;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0 25px;
-  overflow: hidden;
+  top: 80px;
+  right: 20px;
+  width: 360px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: rgba(30, 30, 60, 0.95);
+  border-radius: 16px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(109, 74, 255, 0.2);
+  z-index: 3000;
+  padding: 10px;
+  animation: slideIn 0.4s ease;
 }
 
-/* Effet de bordure animée */
-.navbar::before {
-  content: '';
-  position: absolute;
-  top: 0;
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    top: 70px;
+  }
+}
+
+/* Navbar Styling */
+.navbar {
+  position: fixed;
+ top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #6d4aff, #ff4a6d, #4aff6d, #6d4aff);
-  background-size: 300% 100%;
-  animation: gradientBorder 8s linear infinite;
-  z-index: -1;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: rgba(20, 20, 40, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(109, 74, 255, 0.2);
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-@keyframes gradientBorder {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-/* Logo avec effet holographique */
 .navbar-logo {
-  width: 50px;
-  height: 50px;
-  margin-right: 20px;
-  transition: all 0.5s ease;
-  filter: 
-    drop-shadow(0 0 5px rgba(109, 74, 255, 0.7))
-    brightness(1.1);
-  position: relative;
-  z-index: 1;
-  display: block;
+  height: 48px;
+  width: auto;
+  object-fit: contain;
 }
 
-.navbar-logo:hover {
-  transform: 
-    scale(1.1) 
-    rotate(5deg);
-  filter: 
-    drop-shadow(0 0 10px rgba(109, 74, 255, 0.9))
-    brightness(1.2);
-}
-
-/* Liens de navigation avec effet futuriste */
 .navbar-links {
   position: fixed;
   bottom: 0;
@@ -77,18 +63,13 @@
   right: 0;
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 10px 20px;
   justify-content: space-around;
+  gap: 10px;
+  padding: 10px 20px;
   background: rgba(20, 20, 40, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 1001;
-}
-
-.navbar-links > li {
-  display: flex;
-  align-items: center;
 }
 
 .navbar-links a {
@@ -97,18 +78,15 @@
   gap: 8px;
   padding: 8px 16px;
   border-radius: 8px;
-  transition: all 0.3s ease;
-  position: relative;
   text-decoration: none;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
-  overflow: hidden;
-  z-index: 1;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .navbar-links a span {
   font-size: 14px;
-  font-weight: 500;
 }
 
 .navbar-links a::before {
@@ -124,29 +102,13 @@
   transition: opacity 0.3s ease;
 }
 
-.navbar-links a::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #6d4aff, #ff4a6d);
-  transition: width 0.3s ease;
+.navbar-links a:hover::before {
+  opacity: 1;
 }
 
 .navbar-links a:hover {
   color: #fff;
   transform: translateY(-3px);
-}
-
-.navbar-links a:hover::before {
-  opacity: 1;
-}
-
-.navbar-links a:hover::after {
-  width: 70%;
 }
 
 .navbar-links a svg {
@@ -160,7 +122,24 @@
   filter: drop-shadow(0 0 5px rgba(109, 74, 255, 0.7));
 }
 
-/* Notification badge avec effet pulse */
+.notification-button {
+  color:#fff;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.notification-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(109, 74, 255, 0.3);
+}
+
 .notification-badge {
   position: absolute;
   top: -5px;
@@ -179,80 +158,16 @@
   border: 2px solid #1f2937;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-/* Correction : notifications-dropdown doit sortir du navbar */
-.notifications-dropdown {
-  position: fixed; /* Utilise fixed pour sortir du flux du navbar */
-  top: 80px; /* Décale sous le navbar (ajuste si besoin) */
-  right: 40px; /* Décale du bord droit (ajuste si besoin) */
-  width: 380px;
-  background: rgba(30, 30, 60, 0.95);
-  border-radius: 20px;
-  border: 1px solid rgba(109, 74, 255, 0.3);
-  backdrop-filter: blur(15px);
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(109, 74, 255, 0.2);
-  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  overflow: hidden;
-  z-index: 2000; /* Plus haut que le navbar */
-  max-height: 70vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Responsive pour mobile */
 @media (max-width: 768px) {
   .navbar {
-    width: 100%;
-    min-height: 70px;
-    padding: 10px 15px;
-    border-radius: 0;
-    top: 0;
-    background: rgba(15, 15, 30, 0.948);
-    transform: none;
-    left: 0;
-  }
-
-  .navbar-top {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    gap: 10px;
-  }
-  
-  .navbar-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-
-  .navbar-links {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    flex-direction: column;
+    height: auto;
     padding: 10px;
-    background: rgba(15, 15, 30, 0.95);
-    backdrop-filter: blur(10px);
+    gap:10px;
   }
 
- .search-container {
-    position: relative;
-    width: 100%;
-    max-width: 200px;
-    min-width: 0;
-    margin: 0;
-    flex: 1;
+  .navbar-logo {
+    height: 36px;
   }
 
   .navbar-links a span {
@@ -260,17 +175,12 @@
   }
 
   .notifications-dropdown {
-    right: 10px;
     left: 10px;
+    right: 10px;
     width: auto;
-    min-width: 0;
-    max-width: 98vw;
-    top: 70px;
   }
 }
 
-
-/* Animation pour le dropdown */
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -282,90 +192,8 @@
   }
 }
 
-/* Effet spécial au survol de la navbar */
-.navbar:hover {
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(109, 74, 255, 0.3),
-    0 0 15px rgba(109, 74, 255, 0.2);
-  transform: translateX(-50%) translateY(-2px);
-}
-
-.navbar-top {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  padding: 0 15px;
-  gap: 15px;
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  min-width: fit-content;
-  flex-shrink: 0;
-}
-
-/* Style pour la zone de recherche dans la navbar */
-.navbar .search-container {
-  flex: 1;
-  max-width: 300px;
-  margin: 0;
-  min-width: 0;
-}
-
-/* Bouton de notification */
-.notification-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.notification-button:hover {
-  background: rgba(109, 74, 255, 0.2);
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(109, 74, 255, 0.3);
-}
-
-.notification-button svg {
-  color: rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
-}
-
-.notification-button:hover svg {
-  color: #6d4aff;
-  transform: scale(1.1);
-}
-
-/* Conteneur de notification */
-.notification-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-/* Dropdown des notifications */
-.notification-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 300px;
-  max-height: 400px;
-  overflow-y: auto;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  z-index: 1000;
-  margin-top: 8px;
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }

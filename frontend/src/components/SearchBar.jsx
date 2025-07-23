@@ -1,10 +1,11 @@
+/** NAVBAR + SEARCH RESPONSIVE FIXED **/
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaTimes } from "react-icons/fa";
 import { useMediaQuery } from 'react-responsive';
 import { API_BASE_URL } from '../services/config';
 import Spinner from './Spinner';
-import './SearchBar.css';
 
 const SearchBar = ({ isMobile, expanded, onCollapse }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +56,7 @@ const SearchBar = ({ isMobile, expanded, onCollapse }) => {
     setIsExpanded(false);
     setSearchTerm('');
     setShowResults(false);
+    onCollapse?.();
   };
 
   useEffect(() => {
@@ -63,7 +65,6 @@ const SearchBar = ({ isMobile, expanded, onCollapse }) => {
         handleSearch(searchTerm);
       }
     }, 300);
-
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
 
@@ -73,20 +74,26 @@ const SearchBar = ({ isMobile, expanded, onCollapse }) => {
         setShowResults(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
-    <div className={`search-container ${expanded ? 'expanded' : ''}`}>
+    <div
+      ref={searchRef}
+      className={`relative transition-all duration-300 ease-out flex-1 max-w-[400px] mx-4 z-[100]
+        ${expanded ? 'fixed top-[70px] left-0 right-0 w-full bg-[#141428] px-4 pb-2 pt-2 rounded-b-2xl shadow-2xl z-[2000]' : ''}`}
+    >
       {isMobileView && !expanded ? (
-        <button className="search-toggle" onClick={handleSearchIconClick}>
+        <button
+          onClick={handleSearchIconClick}
+          className="bg-white/10 border border-white/10 rounded-full w-10 h-10 flex items-center justify-center text-white hover:bg-violet-400/20 hover:text-violet-400 hover:scale-110 transition"
+        >
           <FaSearch />
         </button>
       ) : (
-        <div className="search-input-wrapper">
-          <FaSearch className="search-icon" />
+        <div className="relative flex items-center w-full">
+          <FaSearch className="absolute left-4 text-white/70 text-sm" />
           <input
             type="text"
             placeholder="Rechercher..."
@@ -95,15 +102,18 @@ const SearchBar = ({ isMobile, expanded, onCollapse }) => {
               setSearchTerm(e.target.value);
               setShowResults(true);
             }}
-            className="search-input "
+            className="w-full h-10 pl-10 pr-10 rounded-full bg-white/5 border border-white/10 text-white text-sm backdrop-blur-sm shadow focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
           {isMobileView && (
-            <button className="search-close" onClick={onCollapse}>
+            <button
+              onClick={handleCloseSearch}
+              className="absolute right-3 text-white/60 hover:text-pink-400 hover:scale-110 transition"
+            >
               <FaTimes />
             </button>
           )}
           {isLoading && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
               <Spinner size="small" />
             </div>
           )}
@@ -111,38 +121,28 @@ const SearchBar = ({ isMobile, expanded, onCollapse }) => {
       )}
 
       {showResults && results.length > 0 && (
-        <div className="results-container">
+        <div
+          className={`absolute ${isMobileView ? 'fixed top-[120px] left-0 right-0 w-full' : 'top-full left-0 right-0'} bg-[#1e1e3c] rounded-xl border border-violet-500/20 shadow-xl z-[2100] max-h-[50vh] overflow-y-auto p-2 space-y-2 animate-fadeIn`}
+        >
           {results.map((result, index) => (
             <div
               key={index}
-              className="result-item"
+              className="flex items-center gap-4 p-3 cursor-pointer hover:bg-violet-500/10 border-b border-white/5"
               onClick={() => handleResultClick(result)}
             >
-              {result.type === 'user' ? (
-                <>
-                  <img
-                    src={result.profilePicture || '/default-avatar.png'}
-                    alt={result.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-white">{result.name}</p>
-                    <p className="text-sm text-gray-400">{result.email}</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <img
-                    src={result.image || '/placeholder.jpg'}
-                    alt={result.title}
-                    className="w-16 h-16 rounded object-cover"
-                  />
-                  <div>
-                    <p className="font-medium text-white">{result.title}</p>
-                    <p className="text-sm text-gray-400">{result.price}</p>
-                  </div>
-                </>
-              )}
+              <img
+                src={result.type === 'user' ? (result.profilePicture || '/default-avatar.png') : (result.image || '/placeholder.jpg')}
+                alt={result.type === 'user' ? result.name : result.title}
+                className="w-10 h-10 rounded-full object-cover border-2 border-violet-500/30"
+              />
+              <div>
+                <p className="text-white font-medium text-sm">
+                  {result.type === 'user' ? result.name : result.title}
+                </p>
+                <p className="text-xs text-white/60">
+                  {result.type === 'user' ? result.email : result.price}
+                </p>
+              </div>
             </div>
           ))}
         </div>

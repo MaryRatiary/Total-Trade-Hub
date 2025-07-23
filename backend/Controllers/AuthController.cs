@@ -41,18 +41,58 @@ namespace TTH.Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
+                if (string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+                {
+                    return BadRequest(new { message = "Le prénom et le nom sont requis" });
+                }
+
+                var firstName = model.FirstName.Trim();
+                var lastName = model.LastName.Trim();
+
                 var user = new User
                 {
                     Email = model.Email.Trim().ToLower(),
-                    Username = "" // Définir une valeur vide par défaut
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Username = $"{firstName}.{lastName}".ToLower(), // Créer un username basé sur le nom complet
+                    Phone = model.Phone?.Trim(),
+                    Residence = model.Residence?.Trim(),
+                    Birthdate = model.Birthdate ?? DateTime.UtcNow,
+                    IsRegistrationComplete = true,
+                    CreatedAt = DateTime.UtcNow,
+                    ProfilePicture = "", // Image de profil vide par défaut
+                    CoverPicture = "", // Image de couverture vide par défaut
+                    PushNotificationsEnabled = true,
+                    EmailNotificationsEnabled = true,
+                    NotificationSoundsEnabled = true,
+                    DarkModeEnabled = false,
+                    Theme = "Default",
+                    FontSize = "Medium"
                 };
 
                 // Hash the password using BCrypt
                 user.PasswordHash = BC.HashPassword(model.Password);
 
-                await _userService.CreateAsync(user);
+                var createdUser = await _userService.CreateAsync(user);
+
+                // Générer le token pour l'utilisateur nouvellement créé
+                var token = GenerateJwtToken(createdUser);
                 
-                return Ok(new { message = "Inscription réussie" });
+                return Ok(new {
+                    message = "Inscription réussie",
+                    token = token,
+                    user = new {
+                        id = createdUser.Id,
+                        username = createdUser.Username,
+                        email = createdUser.Email,
+                        firstName = createdUser.FirstName,
+                        lastName = createdUser.LastName,
+                        phone = createdUser.Phone,
+                        birthdate = createdUser.Birthdate,
+                        residence = createdUser.Residence,
+                        profilePicture = createdUser.ProfilePicture
+                    }
+                });
             }
             catch (InvalidOperationException ex)
             {
@@ -203,12 +243,6 @@ namespace TTH.Backend.Controllers
     }
 
     public class LoginRequest
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
-
-    public class RegisterModel
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;

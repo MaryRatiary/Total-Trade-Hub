@@ -19,7 +19,32 @@ const UserProfile = () => {
   const [previousPhotos, setPreviousPhotos] = useState([]);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [friendRequestStatus, setFriendRequestStatus] = useState(null); // 'pending', 'accepted', null
+  const [activeTab, setActiveTab] = useState('publications');
   const [coverHovered, setCoverHovered] = useState(false);
+  const [articles, setArticles] = useState([]);
+
+  // Fonction pour charger les articles
+  const loadArticles = async (userId) => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser?.token) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/articles/user/${userId || currentUser.id}`, {
+        headers: {
+          'Authorization': `Bearer ${currentUser.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Articles chargés:', data);
+        setArticles(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des articles:', error);
+    }
+  };
 
   const loadUserProfile = async () => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -54,6 +79,29 @@ const UserProfile = () => {
         throw new Error(data.message || 'Error fetching profile');
       }
 
+      // Log détaillé pour déboguer
+      console.log('Articles dans la réponse (data.articles):', data.articles);
+      console.log('Articles dans la réponse (data.Articles):', data.Articles);
+      console.log('Toutes les clés de data:', Object.keys(data));
+
+      // Essayons de trouver les articles dans la réponse
+      let articles = [];
+      if (Array.isArray(data.articles)) {
+        articles = data.articles;
+        console.log('Articles trouvés dans data.articles');
+      } else if (Array.isArray(data.Articles)) {
+        articles = data.Articles;
+        console.log('Articles trouvés dans data.Articles');
+      } else if (data.articles) {
+        articles = [data.articles];
+        console.log('Un seul article trouvé dans data.articles');
+      } else if (data.Articles) {
+        articles = [data.Articles];
+        console.log('Un seul article trouvé dans data.Articles');
+      }
+
+      console.log('Articles formatés:', articles);
+
       setUser({
         ...data,
         FirstName: data.firstName || data.FirstName,
@@ -63,7 +111,7 @@ const UserProfile = () => {
         Residence: data.residence || data.Residence,
         ProfilePicture: data.profilePicture || data.ProfilePicture,
         CoverPicture: data.coverPicture || data.CoverPicture,
-        Articles: data.articles || data.Articles || []
+        Articles: articles
       });
 
       // Fetch friends count
@@ -198,6 +246,7 @@ const UserProfile = () => {
   useEffect(() => {
     loadUserProfile();
     checkFriendshipStatus();
+    loadArticles(userId);
   }, [userId, navigate]);
 
   const checkFriendshipStatus = async () => {
@@ -395,7 +444,10 @@ const UserProfile = () => {
               <div className="profile-picture-container">
                 <img
                   src={user.ProfilePicture || '/default-avatar.png'}
-                  alt={`${user.FirstName} ${user.LastName}`}
+                  alt={[
+                    user.FirstName || user.firstName || '',
+                    user.LastName || user.lastName || ''
+                  ].filter(Boolean).join(' ').trim()}
                   className="w-full h-full object-cover"
                 />
                 {isOwnProfile && (
@@ -418,7 +470,12 @@ const UserProfile = () => {
               <div className="profile-info">
                 <div className="profile-header">
                   <div>
-                    <h1 className="profile-name">{user.FirstName} {user.LastName}</h1>
+                    <h1 className="profile-name">
+                      {[
+                        user.FirstName || user.firstName || '',
+                        user.LastName || user.lastName || ''
+                      ].filter(Boolean).join(' ').trim()}
+                    </h1>
                     <p className="profile-subtitle">{friendsCount} amis</p>
                   </div>
                   {!isOwnProfile && (
@@ -463,44 +520,123 @@ const UserProfile = () => {
 
                 {/* Tabs */}
                 <div className="profile-tabs">
-                  <div className="profile-tab active">Publications</div>
-                  <div className="profile-tab">À propos</div>
-                  <div className="profile-tab">Amis</div>
-                  <div className="profile-tab">Photos</div>
+                  <div 
+                    className={`profile-tab ${activeTab === 'publications' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('publications')}
+                  >
+                    Publications
+                  </div>
+                  <div 
+                    className={`profile-tab ${activeTab === 'photos' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('photos')}
+                  >
+                    Photos
+                  </div>
+                  <div 
+                    className={`profile-tab ${activeTab === 'apropos' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('apropos')}
+                  >
+                    À propos
+                  </div>
+                  <div 
+                    className={`profile-tab ${activeTab === 'amis' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('amis')}
+                  >
+                    Amis
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         ) : null}
 
-        {/* Articles Grid */}
-        {user?.Articles && user.Articles.length > 0 && (
-          <div className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {user.Articles.map(article => (
-                <div key={article.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <img
-                    src={article.imagePath || '/placeholder.jpg'}
-                    alt={article.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">{article.title}</h3>
-                    <p className="text-gray-600 text-sm mb-2">{article.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-blue-600 font-semibold">
-                        {article.price ? `${new Intl.NumberFormat('fr-FR').format(article.price)} Ar` : 'Prix non spécifié'}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        {new Date(article.createdAt).toLocaleDateString('fr-FR')}
-                      </span>
+        {/* Content based on active tab */}
+        <div className="mt-6">
+          {/* Publications Tab */}
+          {activeTab === 'publications' && (
+            <>
+              <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+                <h3 className="text-xl font-semibold mb-2">Publications</h3>
+                <p className="text-gray-600">
+                  Nombre total de publications: {user?.Articles?.length || 0}
+                </p>
+              </div>
+
+              {articles && articles.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {console.log('Articles à afficher:', articles)}
+                  {articles.map(article => (
+                    <div key={article.Id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                      <div className="relative">
+                        <img
+                          src={article.ImagePath || '/placeholder.jpg'}
+                          alt={article.Title}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                          <span className="text-white font-semibold text-lg">
+                            {article.Price ? `${new Intl.NumberFormat('fr-FR').format(article.Price)} Ar` : 'Prix non spécifié'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-lg mb-2">{article.Title}</h3>
+                        <p className="text-gray-600 text-sm mb-3">{article.Content}</p>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-500">📍 {article.Location || 'Lieu non spécifié'}</span>
+                          <span className="text-gray-500">
+                            {new Date(article.CreatedAt).toLocaleDateString('fr-FR')}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                  <p className="text-gray-600">Aucune publication pour le moment</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Photos Tab */}
+          {activeTab === 'photos' && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {/* Show article images */}
+              {user?.Articles?.filter(article => article.imagePath).map(article => (
+                <div key={article.id} className="relative group">
+                  <img
+                    src={article.imagePath}
+                    alt={article.title}
+                    className="w-full h-48 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 rounded-lg"></div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* À propos Tab */}
+          {activeTab === 'apropos' && (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-xl font-semibold mb-4">Informations personnelles</h3>
+              <div className="space-y-3">
+                <p><span className="font-medium">Email:</span> {user.Email}</p>
+                <p><span className="font-medium">Téléphone:</span> {user.Phone || 'Non renseigné'}</p>
+                <p><span className="font-medium">Résidence:</span> {user.Residence || 'Non renseigné'}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Amis Tab */}
+          {activeTab === 'amis' && (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-xl font-semibold mb-4">Liste des amis ({friendsCount})</h3>
+              {/* Add friends list component here when implemented */}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

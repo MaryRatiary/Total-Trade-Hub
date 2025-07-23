@@ -276,12 +276,12 @@ const WelcomePage = () => {
             </div>
 
             <div className="admin-controls mb-4">
-              <button 
+              {/* <button 
                 onClick={deleteAllArticles}
                 className="delete-all-button bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded"
               >
                 Supprimer toutes les publications
-              </button>
+              </button> */}
             </div>
             
             <section className="articles">

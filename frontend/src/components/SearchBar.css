@@ -171,17 +171,15 @@
 
   .search-container.expanded {
     position: fixed;
-    top: 0;
+    top: 70px;
     left: 0;
     right: 0;
-    bottom: 30;
-    transform: none;
-    width: 100%;
-    padding: 8px;
-    background: rgba(20, 20, 40, 0.98);
-    backdrop-filter: blur(10px);
+    width: 100vw;
+    background: rgba(20,20,40,0.98);
     z-index: 2000;
-    height: 60px;
+    padding: 10px 16px 0 16px;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgba(109, 74, 255, 0.2);
@@ -240,17 +238,17 @@
 
   .results-container {
     position: fixed;
-    top: 100px;
+    top: 120px;
     left: 0;
     right: 0;
-    height: calc(100vh - 160px); /* Ajuste pour la navbar du bas */
-    border-radius: 0;
-    border: none;
-    background: rgba(20, 20, 40, 0.98);
-    backdrop-filter: blur(15px);
-    padding: 8px 0;
-    z-index: 1999;
+    width: 100vw;
+    max-height: 50vh;
     overflow-y: auto;
+    z-index: 2100;
+    background: rgba(20,20,40,0.98);
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    padding: 8px 0;
     -webkit-overflow-scrolling: touch;
   }
 
