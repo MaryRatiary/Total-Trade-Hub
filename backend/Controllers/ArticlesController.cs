@@ -27,8 +27,8 @@ namespace TTH.Backend.Controllers
             _environment = environment;
             _logger = logger;
             _baseUrl = environment.IsDevelopment() 
-                ? "http://192.168.88.158:5131"  // URL de développement
-                : "http://192.168.88.158:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.88.64:5131"  // URL de développement
+                : "http://192.168.88.64:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         [HttpGet("all")]
@@ -234,7 +234,7 @@ namespace TTH.Backend.Controllers
                         authorLastName = article.AuthorLastName,
                         authorUsername = article.AuthorUsername,
                         authorProfilePicture = !string.IsNullOrEmpty(article.AuthorProfilePicture)
-                            ? $"http://192.168.88.158:5131{article.AuthorProfilePicture}"
+                            ? $"http://192.168.88.64:5131{article.AuthorProfilePicture}"
                             : null
                     }
                 };

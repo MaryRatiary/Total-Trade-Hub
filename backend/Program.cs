@@ -92,7 +92,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
             "http://localhost:5173",
-            "http://192.168.88.158:5173"
+            "http://192.168.88.64:5173"
         )
         .AllowAnyMethod()
         .AllowAnyHeader()
@@ -140,12 +140,12 @@ using (var scope = app.Services.CreateScope())
 
 // Configure Kestrel for all network interfaces
 app.Urls.Clear();
-app.Urls.Add("http://192.168.88.158:5131"); // <-- Utilise l'IP locale
+app.Urls.Add("http://192.168.88.64:5131"); // <-- Utilise l'IP locale
 
 // Only use HTTPS in production
 if (!app.Environment.IsDevelopment())
 {
-    app.Urls.Add("https://192.168.88.158:5132"); // <-- Utilise l'IP locale
+    app.Urls.Add("https://192.168.88.64:5132"); // <-- Utilise l'IP locale
 }
 
 // Configure middleware pipeline

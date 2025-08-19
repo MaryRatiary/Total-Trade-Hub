@@ -22,8 +22,8 @@ namespace TTH.Backend.Controllers
             _logger = logger;
             _webHostEnvironment = webHostEnvironment;
             _baseUrl = webHostEnvironment.IsDevelopment() 
-                ? "http://192.168.88.158:5131"  // URL de développement
-                : "http://192.168.88.158:5131"; // URL de production (à modifier selon vos besoins)
+                ? "http://192.168.88.64:5131"  // URL de développement
+                : "http://192.168.88.64:5131"; // URL de production (à modifier selon vos besoins)
         }
 
         private string GetFullUrl(string? path)
@@ -31,7 +31,7 @@ namespace TTH.Backend.Controllers
             if (string.IsNullOrEmpty(path)) return string.Empty;
             if (path.StartsWith("http")) return path;
             if (path.StartsWith("https://avatars.githubusercontent.com")) return path;
-            return $"http://192.168.88.158:5131{path}";
+            return $"http://192.168.88.64:5131{path}";
         }
 
         [HttpGet("list")] // Changed from "all" to "list" to avoid conflict

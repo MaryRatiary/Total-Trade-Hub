@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Définir l'URL de base pour toutes les requêtes axios
-axios.defaults.baseURL = 'http://192.168.88.158:5131'; // Ajustez le port selon votre configuration backend
+axios.defaults.baseURL = 'http://192.168.88.64:5131'; // Ajustez le port selon votre configuration backend
 
 // Intercepteur pour ajouter le token à chaque requête
 axios.interceptors.request.use((config) => {

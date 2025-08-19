@@ -2,9 +2,9 @@
 const getApiBaseUrl = () => {
     // Utiliser l'IP actuelle de la machine pour le développement
     if (process.env.NODE_ENV === 'development') {
-        return 'http://192.168.88.158:5131/api';
+        return 'http://192.168.88.64:5131/api';
     }
-    return process.env.VITE_API_URL || 'http://192.168.88.158:5131/api';
+    return process.env.VITE_API_URL || 'http://192.168.88.64:5131/api';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
